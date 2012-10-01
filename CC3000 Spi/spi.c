@@ -86,7 +86,7 @@ void SSIContReadOperation(void);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef __CCS__
-#pragma DATA_SECTION(spi_buffer, ".FRAM_DATA")
+#pragma DATA_SECTION(spi_buffer, ".FRAM_DATA_SEND_BUFFER")
 char spi_buffer[CC3000_RX_BUFFER_SIZE];
 
 #elif __IAR_SYSTEMS_ICC__
@@ -97,7 +97,7 @@ __no_init char spi_buffer[CC3000_RX_BUFFER_SIZE];
 
 
 #ifdef __CCS__
-#pragma DATA_SECTION(wlan_tx_buffer, ".FRAM_DATA")
+#pragma DATA_SECTION(wlan_tx_buffer, ".FRAM_DATA_SEND_BUFFER")
 unsigned char wlan_tx_buffer[CC3000_TX_BUFFER_SIZE];
 
 #elif __IAR_SYSTEMS_ICC__

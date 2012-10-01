@@ -105,16 +105,16 @@ void initServer(void)
 //*****************************************************************************
 void waitForConnection(void)
 {
-	unsigned int quantity = 1468;
+	unsigned int quantity = 1460;
 	unsigned char *buffer1_ptr;
 
-	buffer1_ptr = (unsigned char *)0xEA10;
+	buffer1_ptr = (unsigned char *)0xF200;
 	int i;
 	for(i=0 ; i < quantity ; i++){
 		*buffer1_ptr = 'A';
 		buffer1_ptr +=1;
 	}
-	buffer1_ptr = (unsigned char *)0xEA10;
+	buffer1_ptr = (unsigned char *)0xF200;
 
     sockaddr clientaddr;  
     socklen_t addrlen;
