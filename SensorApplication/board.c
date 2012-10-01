@@ -242,6 +242,8 @@ void initClk(void)
     CSCTL0_H = 0xA5;
     CSCTL1 |= DCORSEL + DCOFSEL0 + DCOFSEL1;	 // Set max. DCO setting
     CSCTL2 = SELA_1 + SELS_3 + SELM_3;		// set ACLK - VLO, the rest  = MCLK = DCO
+    //Aux Clk set to VLO Clk
+    //SM Clock and Main Clock set to DCO Clk
     CSCTL3 = DIVA_0 + DIVS_0 + DIVM_0;		// set all dividers to 0
 
 }

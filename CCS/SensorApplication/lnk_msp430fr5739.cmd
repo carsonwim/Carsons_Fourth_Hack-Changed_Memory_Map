@@ -17,17 +17,34 @@
 /****************************************************************************/
 /* SPECIFY THE SYSTEM MEMORY MAP                                            */
 /****************************************************************************/
+/****************************************************************************/
+/* Memory Map for IKL2M App                                                 */
+/****************************************************************************/
 
 MEMORY
 {
+
+
     SFR                     : origin = 0x0000, length = 0x0010
     PERIPHERALS_8BIT        : origin = 0x0010, length = 0x00F0
     PERIPHERALS_16BIT       : origin = 0x0100, length = 0x0100
+
     RAM                     : origin = 0x1C00, length = 0x0400
+
     INFOA                   : origin = 0x1880, length = 0x0080
     INFOB                   : origin = 0x1800, length = 0x0080
-    FRAM_DATA				: origin = 0xC200, length = 0x00F0
-    FRAM                    : origin = 0xC2F0, length = 0x3C90  //was   : origin = 0xC200, length = 0x3D80
+// Original:
+//    FRAM_DATA				: origin = 0xC200, length = 0x00F0
+//    FRAM                    : origin = 0xC2F0, length = 0x3C90  //was   : origin = 0xC200, length = 0x3D80
+
+// Modified Memory Map
+    FRAM                    : origin = 0xC200, length = 0x2800
+    //FRAM_DATA_LOG1           : origin = 0xE400, length = 0x0600
+    FRAM_DATA_LOG           : origin = 0xEA00, length = 0x0600
+    FRAM_DATA               : origin = 0xF000, length = 0x0EA0
+
+
+
     INT00                   : origin = 0xFF80, length = 0x0002
     INT01                   : origin = 0xFF82, length = 0x0002
     INT02                   : origin = 0xFF84, length = 0x0002
@@ -125,6 +142,8 @@ SECTIONS
     .stack     : {} > RAM (HIGH)         /* SOFTWARE SYSTEM STACK             */
 
 	.FRAM_DATA : {} > FRAM_DATA
+	//.fram_log1  : {} > FRAM_DATA_LOG1
+	.fram_log  : {} > FRAM_DATA_LOG
     .infoA     : {} > INFOA              /* MSP430 INFO FRAM  MEMORY SEGMENTS */
     .infoB     : {} > INFOB
 

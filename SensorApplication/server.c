@@ -27,8 +27,8 @@ sockaddr serverSocketAddr;
 /** \brief Definition of data packet to be sent by server */
 //unsigned char dataPacket[] = { '\n', 0xBE,'1','2','3','4','5', 0xEF };
 unsigned char dataPacket[60] = "AAAAAAAAA1AAAAAAAAA2AAAAAAAAA3AAAAAAAAA4AAAAAAAAA5AAAAAAAAA6";
-//unsigned char dataPacket[100] = "AAAAAAAAA0AAAAAAAAA1AAAAAAAAA2AAAAAAAAA3AAAAAAAAA4AAAAAAAAA5AAAAAAAAA6AAAAAAAAA7AAAAAAAAA8AAAAAAAAA9";
-unsigned char large_Data_Packet[62] = {0};
+
+
 
 
 char serverErrorCode = 0;
@@ -105,6 +105,17 @@ void initServer(void)
 //*****************************************************************************
 void waitForConnection(void)
 {
+	unsigned int quantity = 1468;
+	unsigned char *buffer1_ptr;
+
+	buffer1_ptr = (unsigned char *)0xEA10;
+	int i;
+	for(i=0 ; i < quantity ; i++){
+		*buffer1_ptr = 'A';
+		buffer1_ptr +=1;
+	}
+	buffer1_ptr = (unsigned char *)0xEA10;
+
     sockaddr clientaddr;  
     socklen_t addrlen;
     int clientDescriptor = -1;
@@ -112,7 +123,8 @@ void waitForConnection(void)
     int curSocket = 0;
     int bytesSent = 0;
     int optval, optlen;
-    
+
+
     // Check whether the server functionality is successfully initialized
     if(currentCC3000State() & CC3000_SERVER_INIT)
     {
@@ -140,9 +152,11 @@ void waitForConnection(void)
                 bytesRecvd = recv(clientDescriptor, requestBuffer, sizeof(requestBuffer), 0);
 
                 if(currentCC3000State() & CC3000_CLIENT_CONNECTED){
-					bytesSent = send(clientDescriptor, (unsigned char *)dataPacket, sizeof(dataPacket), 0);
+					//bytesSent = send(clientDescriptor, (unsigned char *)dataPacket, sizeof(dataPacket), 0);
+					bytesSent = send(clientDescriptor, buffer1_ptr, quantity, 0);
 					toggleLed(CC3000_SENDING_DATA_IND);
-					if (bytesSent != sizeof(dataPacket))
+//					if (bytesSent != sizeof(dataPacket))
+					if (bytesSent != quantity)
 					{	// Check if socket is still available
 						curSocket =  getsockopt(clientDescriptor, SOL_SOCKET, SOCK_DGRAM , &optval, (socklen_t*)&optlen);
 						if (curSocket != 0)
@@ -169,16 +183,17 @@ void waitForConnection(void)
 //                        toggleLed(CC3000_SENDING_DATA_IND);
 //
 ////                        demoPacketCreator();
+//                       bytesSent = send(clientDescriptor, buffer1_ptr, quantity, 0);
 //
-//                        bytesSent = send(clientDescriptor, (unsigned char *)dataPacket, sizeof(dataPacket), 0);
-//                        if (bytesSent != sizeof(dataPacket))
+////                        bytesSent = send(clientDescriptor, (unsigned char *)dataPacket, sizeof(dataPacket), 0);
+//                        if (bytesSent != quantity)
 //                        {
 //                            // Check if socket is still available
 //                            curSocket =  getsockopt(clientDescriptor, SOL_SOCKET, SOCK_DGRAM , &optval, (socklen_t*)&optlen);
 //                            if (curSocket != 0)
 //                            {
 //                                closesocket(clientDescriptor);
-//                                terminalPrint("Client Disconnected\r\n");
+////                                terminalPrint("Client Disconnected\r\n");
 //																clientDescriptor = -1;
 //                                unsetCC3000MachineState(CC3000_CLIENT_CONNECTED);
 //                            }
@@ -187,7 +202,7 @@ void waitForConnection(void)
 //                        __delay_cycles(10);			//this should wait a second
 //                    }
 //                }
-                __delay_cycles(1000);
+//                __delay_cycles(1000);
             }
             else if(clientDescriptor == SOCKET_INACTIVE_ERR)
             {
