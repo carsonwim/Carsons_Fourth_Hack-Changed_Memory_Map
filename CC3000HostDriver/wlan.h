@@ -160,70 +160,70 @@ extern long wlan_connect(char *ssid, long ssid_len);
 
 extern long wlan_disconnect(void);
 
-/**
- * \brief add profile 
- *
- *  When auto start is enabled, the device connects to
- *  station from the profiles table. Up to 7 profiles are
- *  supported. If several profiles configured the device chose
- *  the highest priority profile, within each priority group,
- *  device will chose profile based on security policy, signal
- *  strength, etc parameters. All the profiles are stored in CC3000 
- *  NVMEM.\n
- *  
- *  
- * \param[in]   tSecType:\n WLAN_SEC_UNSEC, WLAN_SEC_WEP, 
- *       WLAN_SEC_WPA or WLAN_SEC_WPA2
- * \param[in]   ucSsid  ssid, up to 32 bytes
- * \param[in]   ulSsidLen ssid length
- * \param[in]   ucBssid  bssid, 6 bytes
- * \param[in]   ulPriority profile priority. Lowest priority:
- *       0
- * \param[in]   ulPairwiseCipher_Or_Key
- * \param[in]   ulGroupCipher_TxKeyLen
- * \param[in]   ulKeyMgmt
- * \param[in]   ucPf_OrKey
- * \param[in]   ulPassPhraseLen
- * 
- *  
- * \return  On success, index is returned. On error, -1 is 
- *            returned      
- *
- * \sa   wlan_ioctl_del_profile       
- * \note        
- * \warning     
- */
+///**
+// * \brief add profile
+// *
+// *  When auto start is enabled, the device connects to
+// *  station from the profiles table. Up to 7 profiles are
+// *  supported. If several profiles configured the device chose
+// *  the highest priority profile, within each priority group,
+// *  device will chose profile based on security policy, signal
+// *  strength, etc parameters. All the profiles are stored in CC3000
+// *  NVMEM.\n
+// *
+// *
+// * \param[in]   tSecType:\n WLAN_SEC_UNSEC, WLAN_SEC_WEP,
+// *       WLAN_SEC_WPA or WLAN_SEC_WPA2
+// * \param[in]   ucSsid  ssid, up to 32 bytes
+// * \param[in]   ulSsidLen ssid length
+// * \param[in]   ucBssid  bssid, 6 bytes
+// * \param[in]   ulPriority profile priority. Lowest priority:
+// *       0
+// * \param[in]   ulPairwiseCipher_Or_Key
+// * \param[in]   ulGroupCipher_TxKeyLen
+// * \param[in]   ulKeyMgmt
+// * \param[in]   ucPf_OrKey
+// * \param[in]   ulPassPhraseLen
+// *
+// *
+// * \return  On success, index is returned. On error, -1 is
+// *            returned
+// *
+// * \sa   wlan_ioctl_del_profile
+// * \note
+// * \warning
+// */
+//
+//
+//#ifndef CC3000_TINY_DRIVER
+//extern long wlan_add_profile(unsigned long ulSecType, unsigned char* ucSsid,
+//										 unsigned long ulSsidLen,
+//										 unsigned char *ucBssid,
+//                                         unsigned long ulPriority,
+//                                         unsigned long ulPairwiseCipher_Or_Key,
+//                                         unsigned long ulGroupCipher_TxKeyLen,
+//                                         unsigned long ulKeyMgmt,
+//                                         unsigned char* ucPf_OrKey,
+//                                         unsigned long ulPassPhraseLen);
+//
+//#endif
 
-
-#ifndef CC3000_TINY_DRIVER
-extern long wlan_add_profile(unsigned long ulSecType, unsigned char* ucSsid,
-										 unsigned long ulSsidLen, 
-										 unsigned char *ucBssid,
-                                         unsigned long ulPriority,
-                                         unsigned long ulPairwiseCipher_Or_Key,
-                                         unsigned long ulGroupCipher_TxKeyLen,
-                                         unsigned long ulKeyMgmt,
-                                         unsigned char* ucPf_OrKey,
-                                         unsigned long ulPassPhraseLen);
-
-#endif
-
-/**
- * \brief Delete WLAN profile
- *
- * Delete WLAN profile  
- *  
- * \param[in]   index  number of profile to delete   
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned
- *
- * \sa   wlan_add_profile       
- * \note        
- * \warning     
- */
-
-extern long wlan_ioctl_del_profile(unsigned long ulIndex);
+///**
+// * \brief Delete WLAN profile
+// *
+// * Delete WLAN profile
+// *
+// * \param[in]   index  number of profile to delete
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// *
+// * \sa   wlan_add_profile
+// * \note
+// * \warning
+// */
+//
+//extern long wlan_ioctl_del_profile(unsigned long ulIndex);
 
 
 /**
@@ -252,22 +252,22 @@ extern long wlan_ioctl_del_profile(unsigned long ulIndex);
 extern long wlan_set_event_mask(unsigned long ulMask);
 
 
-/**
- * \brief get wlan status
- *  
- * get wlan status: disconnected, scaning, connecting or 
- * connected 
- *  
- * \return WLAN_STATUS_DISCONNECTED (0) , WLAN_STATUS_SCANING (1), 
- *         STATUS_CONNECTING (2)  or WLAN_STATUS_CONNECTED (3)
- * 
- *
- * \sa          
- * \note        
- * \warning     
- */
-
-extern long wlan_ioctl_statusget(void);
+///**
+// * \brief get wlan status
+// *
+// * get wlan status: disconnected, scaning, connecting or
+// * connected
+// *
+// * \return WLAN_STATUS_DISCONNECTED (0) , WLAN_STATUS_SCANING (1),
+// *         STATUS_CONNECTING (2)  or WLAN_STATUS_CONNECTED (3)
+// *
+// *
+// * \sa
+// * \note
+// * \warning
+// */
+//
+//extern long wlan_ioctl_statusget(void);
 
 /**
  * \brief set connection policy
@@ -312,139 +312,139 @@ extern long wlan_ioctl_set_connection_policy(
 
 
 
-/**
- * \brief Gets the WLAN scan operation results
- *
- * Gets entry from scan result table.
- * The scan results are returned one by one, and each entry represents a single AP found in the area. The following is a format of hte scan result:
- *	- 4 Bytes: number of networks found
- *	- 4 Bytes: The status of the scan: 0 - agged results, 1 - results valid, 2 - no results
- *  - 56 bytes: Result entry, where the bytes are arranged as
- *    follows:
- *				- 1 bytes isValid - is result valid or not
- *				- 7 bytes rssi 			- RSSI value;	 
- *				- 2 bytes: securityMode - security mode of the AP: 0 - Open, 1 - WEP, 2 WPA, 3 WPA2
- *				- 6 bytes: SSID name length
- *				- 2 bytes: the time at which the entry has entered into scans result table
- *				- 32 bytes: SSID name
- *				- 6 bytes:	BSSID
- *  
- * \param[in] scan_timeout  
- * \param[out] ucResults  scan resault 
- *       (_wlan_full_scan_results_args_t)
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned 
- *
- * \sa  wlan_ioctl_set_scan_params        
- * \note scan_timeout, is not supported on this version.       
- * \warning     
- */
+///**
+// * \brief Gets the WLAN scan operation results
+// *
+// * Gets entry from scan result table.
+// * The scan results are returned one by one, and each entry represents a single AP found in the area. The following is a format of hte scan result:
+// *	- 4 Bytes: number of networks found
+// *	- 4 Bytes: The status of the scan: 0 - agged results, 1 - results valid, 2 - no results
+// *  - 56 bytes: Result entry, where the bytes are arranged as
+// *    follows:
+// *				- 1 bytes isValid - is result valid or not
+// *				- 7 bytes rssi 			- RSSI value;
+// *				- 2 bytes: securityMode - security mode of the AP: 0 - Open, 1 - WEP, 2 WPA, 3 WPA2
+// *				- 6 bytes: SSID name length
+// *				- 2 bytes: the time at which the entry has entered into scans result table
+// *				- 32 bytes: SSID name
+// *				- 6 bytes:	BSSID
+// *
+// * \param[in] scan_timeout
+// * \param[out] ucResults  scan resault
+// *       (_wlan_full_scan_results_args_t)
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// *
+// * \sa  wlan_ioctl_set_scan_params
+// * \note scan_timeout, is not supported on this version.
+// * \warning
+// */
+//
+//
+//extern long wlan_ioctl_get_scan_results(unsigned long ulScanTimeout,
+//                                       unsigned char *ucResults);
 
-
-extern long wlan_ioctl_get_scan_results(unsigned long ulScanTimeout,
-                                       unsigned char *ucResults);
-
-/**
- * \brief Sets the WLAN scan configuration
- *
- * start and stop scan procedure. 
- * Set scan parameters 
- *  
- * \param[in] uiEnable       start/stop scan (1=start scan with default interval value of 10 min. in order to set a diffrent scan interval value apply the value in miliseconds. minimum 1 second. 
- *                                            0=stop).  Wlan reset (wlan_stop()  wlan_start()) is needed when changing scan interval value.
- *       Saved: No 
- * \param[in] uiMinDwellTime   minimum dwell time value to be 
- *       used for each channel, in millisconds. Saved: yes
- *       Default: 20
- * \param[in] uiMaxDwellTime    maximum dwell time value to be 
- *       used for each channel, in millisconds. Saved: yes
- *       Default: 30
- * \param[in] uiNumOfProbeResponces  max probe request between 
- *       dwell time. Saved: yes. Default: 2 
- *  
- * \param[in] uiChannelMask  bitwise, up to 13 channels 
- *       (0x1fff). Saved: yes. Default: 0x7ff
- * \param[in] uiRSSIThreshold   RSSI threshold. Saved: yes 
- *       Default -80
- * \param[in] uiSNRThreshold    NSR thereshold. Saved: yes.
- *       Default: 0
- * \param[in] uiDefaultTxPower  probe Tx power. Saved: yes 
- *       Default: 205
- * \param[in] aiIntervalList    pointer to array with 16 entries
- *       (16 channels) each entry (unsigned int) holds timeout
- *       between scanning the next channel (in millisconds ).
- *       Saved: yes. Default 2000ms.
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned 
- * \sa   wlan_ioctl_get_scan_results       
- * \note uiDefaultTxPower, is not supported on this version.    
- * \warning     
- */
-
-
-extern long wlan_ioctl_set_scan_params(unsigned long uiEnable,unsigned long uiMinDwellTime,unsigned long uiMaxDwellTime,
-										   unsigned long uiNumOfProbeResponces,unsigned long uiChannelMask,
-										   long iRSSIThreshold,unsigned long uiSNRThreshold,
-										   unsigned long uiDefaultTxPower, unsigned long *aiIntervalList);
+///**
+// * \brief Sets the WLAN scan configuration
+// *
+// * start and stop scan procedure.
+// * Set scan parameters
+// *
+// * \param[in] uiEnable       start/stop scan (1=start scan with default interval value of 10 min. in order to set a diffrent scan interval value apply the value in miliseconds. minimum 1 second.
+// *                                            0=stop).  Wlan reset (wlan_stop()  wlan_start()) is needed when changing scan interval value.
+// *       Saved: No
+// * \param[in] uiMinDwellTime   minimum dwell time value to be
+// *       used for each channel, in millisconds. Saved: yes
+// *       Default: 20
+// * \param[in] uiMaxDwellTime    maximum dwell time value to be
+// *       used for each channel, in millisconds. Saved: yes
+// *       Default: 30
+// * \param[in] uiNumOfProbeResponces  max probe request between
+// *       dwell time. Saved: yes. Default: 2
+// *
+// * \param[in] uiChannelMask  bitwise, up to 13 channels
+// *       (0x1fff). Saved: yes. Default: 0x7ff
+// * \param[in] uiRSSIThreshold   RSSI threshold. Saved: yes
+// *       Default -80
+// * \param[in] uiSNRThreshold    NSR thereshold. Saved: yes.
+// *       Default: 0
+// * \param[in] uiDefaultTxPower  probe Tx power. Saved: yes
+// *       Default: 205
+// * \param[in] aiIntervalList    pointer to array with 16 entries
+// *       (16 channels) each entry (unsigned int) holds timeout
+// *       between scanning the next channel (in millisconds ).
+// *       Saved: yes. Default 2000ms.
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// * \sa   wlan_ioctl_get_scan_results
+// * \note uiDefaultTxPower, is not supported on this version.
+// * \warning
+// */
+//
+//
+//extern long wlan_ioctl_set_scan_params(unsigned long uiEnable,unsigned long uiMinDwellTime,unsigned long uiMaxDwellTime,
+//										   unsigned long uiNumOfProbeResponces,unsigned long uiChannelMask,
+//										   long iRSSIThreshold,unsigned long uiSNRThreshold,
+//										   unsigned long uiDefaultTxPower, unsigned long *aiIntervalList);
                                            
 
-/**
- * \brief Start acquire profile
- *
- * Start to acquire device profile. Device scans messages from 
- * station with specific prefix SSID 
- * (wlan_simple_config_set_prefix). The device acquire his own 
- * profile, if profile message is found. The acquired AP information is
- * stored in the profiles table of CC3000.After the profile is acquired the
- * behavior is as defined by policy. \n 
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned 
- * \sa   wlan_smart_config_set_prefix  wlan_smart_config_stop 
- * \note    An asynchnous event - Simple Config Done will be generated as soon as the process finishes successfully    
- * \warning     
- */
-                                           
-                                           
-extern long wlan_first_time_config_start(void);
+///**
+// * \brief Start acquire profile
+// *
+// * Start to acquire device profile. Device scans messages from
+// * station with specific prefix SSID
+// * (wlan_simple_config_set_prefix). The device acquire his own
+// * profile, if profile message is found. The acquired AP information is
+// * stored in the profiles table of CC3000.After the profile is acquired the
+// * behavior is as defined by policy. \n
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// * \sa   wlan_smart_config_set_prefix  wlan_smart_config_stop
+// * \note    An asynchnous event - Simple Config Done will be generated as soon as the process finishes successfully
+// * \warning
+// */
+//
+//
+//extern long wlan_first_time_config_start(void);
 
 
-/**
- * \brief stop acquire profile 
- *  
- * Stop the acquire profile procedure 
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned 
- *
- * \sa   wlan_first_time_config_start  wlan_first_time_config_set_prefix
- * \note      
- * \warning     
- */
+///**
+// * \brief stop acquire profile
+// *
+// * Stop the acquire profile procedure
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// *
+// * \sa   wlan_first_time_config_start  wlan_first_time_config_set_prefix
+// * \note
+// * \warning
+// */
+//
+//extern long wlan_first_time_config_stop(void);
 
-extern long wlan_first_time_config_stop(void);
 
-
-/**
- * \brief config set prefix
- *  
- * Configure station ssid prefix. The prefix is used to identify
- * the station that broadcast device profile. 
- *
- * \param[in] newPrefix  3 bytes identify the SSID prefix for 
- *       the Simple Config.
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned   
- *
- * \sa   wlan_first_time_config_start  wlan_first_time_config_stop
- * \note        The prefix is stored in CC3000 NVMEM.\n
- * \warning     
- */
-
-extern long wlan_first_time_config_set_prefix(char* cNewPrefix);
+///**
+// * \brief config set prefix
+// *
+// * Configure station ssid prefix. The prefix is used to identify
+// * the station that broadcast device profile.
+// *
+// * \param[in] newPrefix  3 bytes identify the SSID prefix for
+// *       the Simple Config.
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// *
+// * \sa   wlan_first_time_config_start  wlan_first_time_config_stop
+// * \note        The prefix is stored in CC3000 NVMEM.\n
+// * \warning
+// */
+//
+//extern long wlan_first_time_config_set_prefix(char* cNewPrefix);
 
 //*****************************************************************************
 //

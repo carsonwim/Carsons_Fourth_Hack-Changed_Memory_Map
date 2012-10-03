@@ -12,7 +12,7 @@
 #include "spi.h"
 #include "socket.h"
 #include "evnt_handler.h"
-#include "os.h"
+//#include "os.h"
 
 sSimplLinkInformation tSLInformation;
 
@@ -532,358 +532,358 @@ wlan_ioctl_set_connection_policy(unsigned long should_connect_to_open_ap,
     return(ret);
 }
 
-/**
- * \brief add profile 
- *
- *  When auto start is enabled, the device connects to
- *  station from the profiles table. Up to 7 profiles are
- *  supported. If several profiles configured the device chose
- *  the highest priority profile, within each priority group,
- *  device will chose profile based on security policy, signal
- *  strength, etc parameters. All the profiles are stored in CC3000 
- *  NVMEM.\n
- *  
- *  
- * \param[in]   tSecType:\n WLAN_SEC_UNSEC, WLAN_SEC_WEP, 
- *       WLAN_SEC_WPA or WLAN_SEC_WPA2
- * \param[in]   ucSsid  ssid, up to 32 bytes
- * \param[in]   ulSsidLen ssid length
- * \param[in]   ucBssid  bssid, 6 bytes
- * \param[in]   ulPriority profile priority. Lowest priority:
- *       0
- * \param[in]   ulPairwiseCipher_Or_Key
- * \param[in]   ulGroupCipher_TxKeyLen
- * \param[in]   ulKeyMgmt
- * \param[in]   ucPf_OrKey
- * \param[in]   ulPassPhraseLen
- * 
- *  
- * \return  On success, index is returned. On error, -1 is 
- *            returned      
- *
- * \sa   wlan_ioctl_del_profile       
- * \note        
- * \warning     
- */
-#ifndef CC3000_TINY_DRIVER
-long
-wlan_add_profile(unsigned long ulSecType, 
-										unsigned char* ucSsid,
-										unsigned long ulSsidLen, 
-										unsigned char *ucBssid,
-                                        unsigned long ulPriority,
-                                        unsigned long ulPairwiseCipher_Or_TxKeyLen,
-                                        unsigned long ulGroupCipher_TxKeyIndex,
-                                        unsigned long ulKeyMgmt,
-                                        unsigned char* ucPf_OrKey,
-                                        unsigned long ulPassPhraseLen)
-{
-    unsigned short arg_len;
-    long ret;
-    unsigned char *ptr;
-    long i = 0;
-	unsigned char *args;
-	unsigned char bssid_zero[] = {0, 0, 0, 0, 0, 0};
-	
-	ptr = tSLInformation.pucTxCommandBuffer;
-	args = (ptr + HEADERS_SIZE_CMD);
+///**
+// * \brief add profile
+// *
+// *  When auto start is enabled, the device connects to
+// *  station from the profiles table. Up to 7 profiles are
+// *  supported. If several profiles configured the device chose
+// *  the highest priority profile, within each priority group,
+// *  device will chose profile based on security policy, signal
+// *  strength, etc parameters. All the profiles are stored in CC3000
+// *  NVMEM.\n
+// *
+// *
+// * \param[in]   tSecType:\n WLAN_SEC_UNSEC, WLAN_SEC_WEP,
+// *       WLAN_SEC_WPA or WLAN_SEC_WPA2
+// * \param[in]   ucSsid  ssid, up to 32 bytes
+// * \param[in]   ulSsidLen ssid length
+// * \param[in]   ucBssid  bssid, 6 bytes
+// * \param[in]   ulPriority profile priority. Lowest priority:
+// *       0
+// * \param[in]   ulPairwiseCipher_Or_Key
+// * \param[in]   ulGroupCipher_TxKeyLen
+// * \param[in]   ulKeyMgmt
+// * \param[in]   ucPf_OrKey
+// * \param[in]   ulPassPhraseLen
+// *
+// *
+// * \return  On success, index is returned. On error, -1 is
+// *            returned
+// *
+// * \sa   wlan_ioctl_del_profile
+// * \note
+// * \warning
+// */
+//#ifndef CC3000_TINY_DRIVER
+//long
+//wlan_add_profile(unsigned long ulSecType,
+//										unsigned char* ucSsid,
+//										unsigned long ulSsidLen,
+//										unsigned char *ucBssid,
+//                                        unsigned long ulPriority,
+//                                        unsigned long ulPairwiseCipher_Or_TxKeyLen,
+//                                        unsigned long ulGroupCipher_TxKeyIndex,
+//                                        unsigned long ulKeyMgmt,
+//                                        unsigned char* ucPf_OrKey,
+//                                        unsigned long ulPassPhraseLen)
+//{
+//    unsigned short arg_len;
+//    long ret;
+//    unsigned char *ptr;
+//    long i = 0;
+//	unsigned char *args;
+//	unsigned char bssid_zero[] = {0, 0, 0, 0, 0, 0};
+//
+//	ptr = tSLInformation.pucTxCommandBuffer;
+//	args = (ptr + HEADERS_SIZE_CMD);
+//
+//	args = UINT32_TO_STREAM(args, ulSecType);
+//
+//	//
+//	// Setup arguments in accordence with the security type
+//	//
+//	switch (ulSecType)
+//	{
+//		//None
+//	    case WLAN_SEC_UNSEC:
+//	    {
+//			args = UINT32_TO_STREAM(args, 0x00000014);
+//			args = UINT32_TO_STREAM(args, ulSsidLen);
+//			args = UINT16_TO_STREAM(args, 0);
+//			if(ucBssid)
+//		    {
+//		    	ARRAY_TO_STREAM(args, ucBssid, ETH_ALEN);
+//		    }
+//		    else
+//		    {
+//		    	ARRAY_TO_STREAM(args, bssid_zero, ETH_ALEN);
+//		    }
+//			args = UINT32_TO_STREAM(args, ulPriority);
+//			ARRAY_TO_STREAM(args, ucSsid, ulSsidLen);
+//
+//	        arg_len = WLAN_ADD_PROFILE_NOSEC_PARAM_LEN + ulSsidLen;
+//	    }
+//		break;
+//
+//		//WEP
+//	    case WLAN_SEC_WEP:
+//	    {
+//			args = UINT32_TO_STREAM(args, 0x00000020);
+//			args = UINT32_TO_STREAM(args, ulSsidLen);
+//			args = UINT16_TO_STREAM(args, 0);
+//			if(ucBssid)
+//		    {
+//		    	ARRAY_TO_STREAM(args, ucBssid, ETH_ALEN);
+//		    }
+//		    else
+//		    {
+//		    	ARRAY_TO_STREAM(args, bssid_zero, ETH_ALEN);
+//		    }
+//			args = UINT32_TO_STREAM(args, ulPriority);
+//			args = UINT32_TO_STREAM(args, 0x0000000C + ulSsidLen);
+//			args = UINT32_TO_STREAM(args, ulPairwiseCipher_Or_TxKeyLen);
+//			args = UINT32_TO_STREAM(args, ulGroupCipher_TxKeyIndex);
+//			ARRAY_TO_STREAM(args, ucSsid, ulSsidLen);
+//
+//			for(i = 0; i < 4; i++)
+//		   	{
+//		   		unsigned char *p = &ucPf_OrKey[i * ulPairwiseCipher_Or_TxKeyLen];
+//
+//		   		ARRAY_TO_STREAM(args, p, ulPairwiseCipher_Or_TxKeyLen);
+//		   	}
+//
+//	        arg_len = WLAN_ADD_PROFILE_WEP_PARAM_LEN + ulSsidLen + ulPairwiseCipher_Or_TxKeyLen * 4;
+//
+//	    }
+//		break;
+//
+//		//WPA
+//		//WPA2
+//	    case WLAN_SEC_WPA:
+//	    case WLAN_SEC_WPA2:
+//	    {
+//			args = UINT32_TO_STREAM(args, 0x00000028);
+//			args = UINT32_TO_STREAM(args, ulSsidLen);
+//			args = UINT16_TO_STREAM(args, 0);
+//			if(ucBssid)
+//		    {
+//		    	ARRAY_TO_STREAM(args, ucBssid, ETH_ALEN);
+//		    }
+//		    else
+//		    {
+//		    	ARRAY_TO_STREAM(args, bssid_zero, ETH_ALEN);
+//		    }
+//			args = UINT32_TO_STREAM(args, ulPriority);
+//			args = UINT32_TO_STREAM(args, ulPairwiseCipher_Or_TxKeyLen);
+//			args = UINT32_TO_STREAM(args, ulGroupCipher_TxKeyIndex);
+//			args = UINT32_TO_STREAM(args, ulKeyMgmt);
+//			args = UINT32_TO_STREAM(args, 0x00000008 + ulSsidLen);
+//			args = UINT32_TO_STREAM(args, ulPassPhraseLen);
+//			ARRAY_TO_STREAM(args, ucSsid, ulSsidLen);
+//			ARRAY_TO_STREAM(args, ucPf_OrKey, ulPassPhraseLen);
+//
+//			arg_len = WLAN_ADD_PROFILE_WPA_PARAM_LEN + ulSsidLen + ulPassPhraseLen;
+//	    }
+//
+//        break;
+//	}
+//
+//    //
+//    // Initiate a HCI command
+//    //
+//    hci_command_send(HCI_CMND_WLAN_IOCTL_ADD_PROFILE,
+//        ptr, arg_len);
+//
+//    //
+//	// Wait for command complete event
+//	//
+//	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_ADD_PROFILE, &ret);
+//
+//    return(ret);
+//}
+//#endif
+///**
+// * \brief Delete WLAN profile
+// *
+// * Delete WLAN profile
+// *
+// * \param[in]   index  number of profile to delete
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// *
+// * \sa   wlan_add_profile
+// * \note
+// * \warning
+// */
+//long
+//wlan_ioctl_del_profile(unsigned long ulIndex)
+//{
+//    long ret;
+//    unsigned char *ptr;
+//    unsigned char *args;
+//
+//	ptr = tSLInformation.pucTxCommandBuffer;
+//	args = (unsigned char *)(ptr + HEADERS_SIZE_CMD);
+//
+//	//
+//	// Fill in HCI packet structure
+//	//
+//	args = UINT32_TO_STREAM(args, ulIndex);
+//    ret = EFAIL;
+//
+//    //
+//    // Initiate a HCI command
+//    //
+//    hci_command_send(HCI_CMND_WLAN_IOCTL_DEL_PROFILE,
+//        ptr, WLAN_DEL_PROFILE_PARAMS_LEN);
+//
+//    //
+//	// Wait for command complete event
+//	//
+//	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_DEL_PROFILE, &ret);
+//
+//    return(ret);
+//}
 
-	args = UINT32_TO_STREAM(args, ulSecType);
-	
-	//
-	// Setup arguments in accordence with the security type
-	//
-	switch (ulSecType)
-	{
-		//None
-	    case WLAN_SEC_UNSEC:
-	    {
-			args = UINT32_TO_STREAM(args, 0x00000014);
-			args = UINT32_TO_STREAM(args, ulSsidLen);
-			args = UINT16_TO_STREAM(args, 0);
-			if(ucBssid)
-		    {
-		    	ARRAY_TO_STREAM(args, ucBssid, ETH_ALEN);
-		    }
-		    else
-		    {
-		    	ARRAY_TO_STREAM(args, bssid_zero, ETH_ALEN);
-		    }
-			args = UINT32_TO_STREAM(args, ulPriority);
-			ARRAY_TO_STREAM(args, ucSsid, ulSsidLen);
-			
-	        arg_len = WLAN_ADD_PROFILE_NOSEC_PARAM_LEN + ulSsidLen;
-	    }
-		break;
-
-		//WEP
-	    case WLAN_SEC_WEP:
-	    {
-			args = UINT32_TO_STREAM(args, 0x00000020);
-			args = UINT32_TO_STREAM(args, ulSsidLen);
-			args = UINT16_TO_STREAM(args, 0);
-			if(ucBssid)
-		    {
-		    	ARRAY_TO_STREAM(args, ucBssid, ETH_ALEN);
-		    }
-		    else
-		    {
-		    	ARRAY_TO_STREAM(args, bssid_zero, ETH_ALEN);
-		    }
-			args = UINT32_TO_STREAM(args, ulPriority);
-			args = UINT32_TO_STREAM(args, 0x0000000C + ulSsidLen);
-			args = UINT32_TO_STREAM(args, ulPairwiseCipher_Or_TxKeyLen);
-			args = UINT32_TO_STREAM(args, ulGroupCipher_TxKeyIndex);
-			ARRAY_TO_STREAM(args, ucSsid, ulSsidLen);
-
-			for(i = 0; i < 4; i++)
-		   	{
-		   		unsigned char *p = &ucPf_OrKey[i * ulPairwiseCipher_Or_TxKeyLen];
-				
-		   		ARRAY_TO_STREAM(args, p, ulPairwiseCipher_Or_TxKeyLen);
-		   	}		
-			
-	        arg_len = WLAN_ADD_PROFILE_WEP_PARAM_LEN + ulSsidLen + ulPairwiseCipher_Or_TxKeyLen * 4;
-
-	    }
-		break;
-
-		//WPA
-		//WPA2
-	    case WLAN_SEC_WPA:
-	    case WLAN_SEC_WPA2:
-	    {
-			args = UINT32_TO_STREAM(args, 0x00000028);
-			args = UINT32_TO_STREAM(args, ulSsidLen);
-			args = UINT16_TO_STREAM(args, 0);
-			if(ucBssid)
-		    {
-		    	ARRAY_TO_STREAM(args, ucBssid, ETH_ALEN);
-		    }
-		    else
-		    {
-		    	ARRAY_TO_STREAM(args, bssid_zero, ETH_ALEN);
-		    }
-			args = UINT32_TO_STREAM(args, ulPriority);
-			args = UINT32_TO_STREAM(args, ulPairwiseCipher_Or_TxKeyLen);
-			args = UINT32_TO_STREAM(args, ulGroupCipher_TxKeyIndex);
-			args = UINT32_TO_STREAM(args, ulKeyMgmt);
-			args = UINT32_TO_STREAM(args, 0x00000008 + ulSsidLen);
-			args = UINT32_TO_STREAM(args, ulPassPhraseLen);
-			ARRAY_TO_STREAM(args, ucSsid, ulSsidLen);
-			ARRAY_TO_STREAM(args, ucPf_OrKey, ulPassPhraseLen);
-			
-			arg_len = WLAN_ADD_PROFILE_WPA_PARAM_LEN + ulSsidLen + ulPassPhraseLen;
-	    }
-
-        break;
-	}    
-
-    //
-    // Initiate a HCI command
-    //
-    hci_command_send(HCI_CMND_WLAN_IOCTL_ADD_PROFILE,
-        ptr, arg_len);
-
-    //
-	// Wait for command complete event
-	//
-	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_ADD_PROFILE, &ret);
-
-    return(ret);
-}
-#endif
-/**
- * \brief Delete WLAN profile
- *
- * Delete WLAN profile  
- *  
- * \param[in]   index  number of profile to delete   
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned
- *
- * \sa   wlan_add_profile       
- * \note        
- * \warning     
- */
-long
-wlan_ioctl_del_profile(unsigned long ulIndex)
-{
-    long ret;
-    unsigned char *ptr;
-    unsigned char *args;
-
-	ptr = tSLInformation.pucTxCommandBuffer;
-	args = (unsigned char *)(ptr + HEADERS_SIZE_CMD);
-	
-	//
-	// Fill in HCI packet structure
-	//
-	args = UINT32_TO_STREAM(args, ulIndex);
-    ret = EFAIL;
-    
-    //
-    // Initiate a HCI command
-    //
-    hci_command_send(HCI_CMND_WLAN_IOCTL_DEL_PROFILE,
-        ptr, WLAN_DEL_PROFILE_PARAMS_LEN);
-
-    //
-	// Wait for command complete event
-	//
-	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_DEL_PROFILE, &ret);
-	
-    return(ret);
-}
-
-/**
- * \brief Gets the WLAN scan operation results
- *
- * Gets entry from scan result table.
- * The scan results are returned one by one, and each entry 
- * represents a single AP found in the area. The following is a 
- * format of the scan result: 
- *	- 4 Bytes: number of networks found
- *	- 4 Bytes: The status of the scan: 0 - agged results, 1 - results valid, 2 - no results
- *  - 56 bytes: Result entry, where the bytes are arranged as
- *    follows:
- *				- 1 bytes isValid - is result valid or not
- *				- 7 bytes rssi 			- RSSI value;	 
- *				- 2 bytes: securityMode - security mode of the AP: 0 - Open, 1 - WEP, 2 WPA, 3 WPA2
- *				- 6 bytes: SSID name length
- *				- 2 bytes: the time at which the entry has entered into scans result table
- *				- 32 bytes: SSID name
- *				- 6 bytes:	BSSID
- *  
- * \param[in] scan_timeout  
- * \param[out] ucResults  scan resault 
- *       (_wlan_full_scan_results_args_t)
- *       
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned 
- *
- * \sa  wlan_ioctl_set_scan_params        
- * \note scan_timeout, is not supported on this version.       
- * \warning     
- */
-#ifndef CC3000_TINY_DRIVER
-long
-wlan_ioctl_get_scan_results(unsigned long ulScanTimeout,
-                            unsigned char *ucResults)
-{
-    unsigned char *ptr;
-    unsigned char *args;
-
-    ptr = tSLInformation.pucTxCommandBuffer;
-    args = (ptr + HEADERS_SIZE_CMD);
-
-    
-    //
-    // Fill in temporary command buffer
-    //
-    args = UINT32_TO_STREAM(args, ulScanTimeout);
-
-    //
-    // Initiate a HCI command
-    //
-    hci_command_send(HCI_CMND_WLAN_IOCTL_GET_SCAN_RESULTS,
-        ptr, WLAN_GET_SCAN_RESULTS_PARAMS_LEN);
-
-    //
-	// Wait for command complete event
-	//
-	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_GET_SCAN_RESULTS, ucResults);
-
-	//
-	// There is no situation where scan result can fail...
-	//
-	
-    return(0);
-}
-#endif
-/**
- * \brief Sets the WLAN scan configuration
- *
- * start and stop scan procedure. 
- * Set scan parameters 
- *  
- * \param[in] uiEnable       start/stop scan (1=start scan with default interval value of 10 min. in order to set a diffrent scan interval value apply the value in miliseconds. minimum 1 second. 
- *                                            0=stop). Wlan reset (wlan_stop()  wlan_start()) is needed when changing scan interval value.
- *       Saved: No 
- * \param[in] uiMinDwellTime   minimum dwell time value to be 
- *       used for each channel, in millisconds. Saved: yes
- *       Default: 20
- * \param[in] uiMaxDwellTime    maximum dwell time value to be 
- *       used for each channel, in millisconds. Saved: yes
- *       Default: 30
- * \param[in] uiNumOfProbeResponces  max probe request between 
- *       dwell time. Saved: yes. Default: 2 
- *  
- * \param[in] uiChannelMask  bitwise, up to 13 channels 
- *       (0x1fff). Saved: yes. Default: 0x7ff
- * \param[in] uiRSSIThreshold   RSSI threshold. Saved: yes 
- *       Default -80
- * \param[in] uiSNRThreshold    NSR thereshold. Saved: yes.
- *       Default: 0
- * \param[in] uiDefaultTxPower  probe Tx power. Saved: yes 
- *       Default: 205
- * \param[in] aiIntervalList    pointer to array with 16 entries
- *       (16 channels) each entry (unsigned int) holds timeout
- *       between scanning the next channel (in millisconds ).
- *       Saved: yes. Default 2000ms.
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned 
- * \sa   wlan_ioctl_get_scan_results       
- * \note uiDefaultTxPower, is not supported on this version.    
- * \warning     
- */
-#ifndef CC3000_TINY_DRIVER
-long
-wlan_ioctl_set_scan_params(unsigned long uiEnable, unsigned long uiMinDwellTime,unsigned long uiMaxDwellTime,
-										   unsigned long uiNumOfProbeResponces,unsigned long uiChannelMask,
-										   long iRSSIThreshold,unsigned long uiSNRThreshold,
-										   unsigned long uiDefaultTxPower, unsigned long *aiIntervalList)
-{
-    unsigned long  uiRes;
-    unsigned char *ptr;
-	unsigned char *args;
-
-    ptr = tSLInformation.pucTxCommandBuffer;
-    args = (ptr + HEADERS_SIZE_CMD);
-
-    //
-    // Fill in temporary command buffer
-    //
-    args = UINT32_TO_STREAM(args, 36);
-	args = UINT32_TO_STREAM(args, uiEnable);
-	args = UINT32_TO_STREAM(args, uiMinDwellTime);
-	args = UINT32_TO_STREAM(args, uiMaxDwellTime);
-	args = UINT32_TO_STREAM(args, uiNumOfProbeResponces);
-	args = UINT32_TO_STREAM(args, uiChannelMask);
-	args = UINT32_TO_STREAM(args, iRSSIThreshold);
-	args = UINT32_TO_STREAM(args, uiSNRThreshold);
-	args = UINT32_TO_STREAM(args, uiDefaultTxPower);
-	ARRAY_TO_STREAM(args, aiIntervalList, sizeof(unsigned long) * SL_SET_SCAN_PARAMS_INTERVAL_LIST_SIZE);
-    
-     
-	
-    //
-    // Initiate a HCI command
-    //
-    hci_command_send(HCI_CMND_WLAN_IOCTL_SET_SCANPARAM,
-        ptr, WLAN_SET_SCAN_PARAMS_LEN);
-
-    //
-	// Wait for command complete event
-	//
-	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_SET_SCANPARAM, &uiRes);
-	
-    return(uiRes);
-}
-#endif
+///**
+// * \brief Gets the WLAN scan operation results
+// *
+// * Gets entry from scan result table.
+// * The scan results are returned one by one, and each entry
+// * represents a single AP found in the area. The following is a
+// * format of the scan result:
+// *	- 4 Bytes: number of networks found
+// *	- 4 Bytes: The status of the scan: 0 - agged results, 1 - results valid, 2 - no results
+// *  - 56 bytes: Result entry, where the bytes are arranged as
+// *    follows:
+// *				- 1 bytes isValid - is result valid or not
+// *				- 7 bytes rssi 			- RSSI value;
+// *				- 2 bytes: securityMode - security mode of the AP: 0 - Open, 1 - WEP, 2 WPA, 3 WPA2
+// *				- 6 bytes: SSID name length
+// *				- 2 bytes: the time at which the entry has entered into scans result table
+// *				- 32 bytes: SSID name
+// *				- 6 bytes:	BSSID
+// *
+// * \param[in] scan_timeout
+// * \param[out] ucResults  scan resault
+// *       (_wlan_full_scan_results_args_t)
+// *
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// *
+// * \sa  wlan_ioctl_set_scan_params
+// * \note scan_timeout, is not supported on this version.
+// * \warning
+// */
+//#ifndef CC3000_TINY_DRIVER
+//long
+//wlan_ioctl_get_scan_results(unsigned long ulScanTimeout,
+//                            unsigned char *ucResults)
+//{
+//    unsigned char *ptr;
+//    unsigned char *args;
+//
+//    ptr = tSLInformation.pucTxCommandBuffer;
+//    args = (ptr + HEADERS_SIZE_CMD);
+//
+//
+//    //
+//    // Fill in temporary command buffer
+//    //
+//    args = UINT32_TO_STREAM(args, ulScanTimeout);
+//
+//    //
+//    // Initiate a HCI command
+//    //
+//    hci_command_send(HCI_CMND_WLAN_IOCTL_GET_SCAN_RESULTS,
+//        ptr, WLAN_GET_SCAN_RESULTS_PARAMS_LEN);
+//
+//    //
+//	// Wait for command complete event
+//	//
+//	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_GET_SCAN_RESULTS, ucResults);
+//
+//	//
+//	// There is no situation where scan result can fail...
+//	//
+//
+//    return(0);
+//}
+//#endif
+///**
+// * \brief Sets the WLAN scan configuration
+// *
+// * start and stop scan procedure.
+// * Set scan parameters
+// *
+// * \param[in] uiEnable       start/stop scan (1=start scan with default interval value of 10 min. in order to set a diffrent scan interval value apply the value in miliseconds. minimum 1 second.
+// *                                            0=stop). Wlan reset (wlan_stop()  wlan_start()) is needed when changing scan interval value.
+// *       Saved: No
+// * \param[in] uiMinDwellTime   minimum dwell time value to be
+// *       used for each channel, in millisconds. Saved: yes
+// *       Default: 20
+// * \param[in] uiMaxDwellTime    maximum dwell time value to be
+// *       used for each channel, in millisconds. Saved: yes
+// *       Default: 30
+// * \param[in] uiNumOfProbeResponces  max probe request between
+// *       dwell time. Saved: yes. Default: 2
+// *
+// * \param[in] uiChannelMask  bitwise, up to 13 channels
+// *       (0x1fff). Saved: yes. Default: 0x7ff
+// * \param[in] uiRSSIThreshold   RSSI threshold. Saved: yes
+// *       Default -80
+// * \param[in] uiSNRThreshold    NSR thereshold. Saved: yes.
+// *       Default: 0
+// * \param[in] uiDefaultTxPower  probe Tx power. Saved: yes
+// *       Default: 205
+// * \param[in] aiIntervalList    pointer to array with 16 entries
+// *       (16 channels) each entry (unsigned int) holds timeout
+// *       between scanning the next channel (in millisconds ).
+// *       Saved: yes. Default 2000ms.
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// * \sa   wlan_ioctl_get_scan_results
+// * \note uiDefaultTxPower, is not supported on this version.
+// * \warning
+// */
+//#ifndef CC3000_TINY_DRIVER
+//long
+//wlan_ioctl_set_scan_params(unsigned long uiEnable, unsigned long uiMinDwellTime,unsigned long uiMaxDwellTime,
+//										   unsigned long uiNumOfProbeResponces,unsigned long uiChannelMask,
+//										   long iRSSIThreshold,unsigned long uiSNRThreshold,
+//										   unsigned long uiDefaultTxPower, unsigned long *aiIntervalList)
+//{
+//    unsigned long  uiRes;
+//    unsigned char *ptr;
+//	unsigned char *args;
+//
+//    ptr = tSLInformation.pucTxCommandBuffer;
+//    args = (ptr + HEADERS_SIZE_CMD);
+//
+//    //
+//    // Fill in temporary command buffer
+//    //
+//    args = UINT32_TO_STREAM(args, 36);
+//	args = UINT32_TO_STREAM(args, uiEnable);
+//	args = UINT32_TO_STREAM(args, uiMinDwellTime);
+//	args = UINT32_TO_STREAM(args, uiMaxDwellTime);
+//	args = UINT32_TO_STREAM(args, uiNumOfProbeResponces);
+//	args = UINT32_TO_STREAM(args, uiChannelMask);
+//	args = UINT32_TO_STREAM(args, iRSSIThreshold);
+//	args = UINT32_TO_STREAM(args, uiSNRThreshold);
+//	args = UINT32_TO_STREAM(args, uiDefaultTxPower);
+//	ARRAY_TO_STREAM(args, aiIntervalList, sizeof(unsigned long) * SL_SET_SCAN_PARAMS_INTERVAL_LIST_SIZE);
+//
+//
+//
+//    //
+//    // Initiate a HCI command
+//    //
+//    hci_command_send(HCI_CMND_WLAN_IOCTL_SET_SCANPARAM,
+//        ptr, WLAN_SET_SCAN_PARAMS_LEN);
+//
+//    //
+//	// Wait for command complete event
+//	//
+//	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_SET_SCANPARAM, &uiRes);
+//
+//    return(uiRes);
+//}
+//#endif
 
 /**
  * \brief set event mask 
@@ -958,153 +958,153 @@ wlan_set_event_mask(unsigned long ulMask)
 	return(ret);
 }
 
-/**
- * \brief get wlan status
- *  
- * get wlan status: disconnected, scaning, connecting or 
- * connected 
- *  
- * \return WLAN_STATUS_DISCONNECTED, WLAN_STATUS_SCANING, 
- *         STATUS_CONNECTING or WLAN_STATUS_CONNECTED
- * 
- *
- * \sa          
- * \note        
- * \warning     
- */
-#ifndef CC3000_TINY_DRIVER
-long
-wlan_ioctl_statusget(void)
-{
-    long ret;
-    unsigned char *ptr;
+///**
+// * \brief get wlan status
+// *
+// * get wlan status: disconnected, scaning, connecting or
+// * connected
+// *
+// * \return WLAN_STATUS_DISCONNECTED, WLAN_STATUS_SCANING,
+// *         STATUS_CONNECTING or WLAN_STATUS_CONNECTED
+// *
+// *
+// * \sa
+// * \note
+// * \warning
+// */
+//#ifndef CC3000_TINY_DRIVER
+//long
+//wlan_ioctl_statusget(void)
+//{
+//    long ret;
+//    unsigned char *ptr;
+//
+//    ret = EFAIL;
+//    ptr = tSLInformation.pucTxCommandBuffer;
+//
+//    hci_command_send(HCI_CMND_WLAN_IOCTL_STATUSGET,
+//        ptr, 0);
+//
+//
+//   	//
+//	// Wait for command complete event
+//	//
+//	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_STATUSGET, &ret);
+//
+//    return(ret);
+//}
+//#endif
+///**
+// * \brief Start acquire profile
+// *
+// * Start to acquire device profile. Device scans messages from
+// * station with specific prefix SSID
+// * (wlan_simple_config_set_prefix). The device acquire his own
+// * profile, if profile message is found. The acquired AP information is
+// * stored in the profiles table of CC3000.After the profile is acquired the
+// * behavior is as defined by policy. \n
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// * \sa   wlan_firs_time_config_set_prefix  wlan_first_time_config_stop
+// * \note    An asynchnous event - First Time Config Done will be generated as soon as the process finishes successfully
+// * \warning
+// */
+//long
+//wlan_first_time_config_start(void)
+//{
+//    long ret;
+//    unsigned char *ptr;
+//
+//    ret = EFAIL;
+//    ptr = tSLInformation.pucTxCommandBuffer;
+//
+//    hci_command_send(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_START, ptr, 0);
+//
+//
+//   	//
+//	// Wait for command complete event
+//	//
+//	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_START, &ret);
+//
+//    return(ret);
+//}
 
-    ret = EFAIL;
-    ptr = tSLInformation.pucTxCommandBuffer;
 
-    hci_command_send(HCI_CMND_WLAN_IOCTL_STATUSGET,
-        ptr, 0);
+///**
+// * \brief stop acquire profile
+// *
+// * Stop the acquire profile procedure
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// *
+// * \sa   wlan_fisrt_time_config_start  wlan_first_time_config_set_prefix
+// * \note
+// * \warning
+// */
+//long
+//wlan_first_time_config_stop(void)
+//{
+//    long ret;
+//    unsigned char *ptr;
+//
+//    ret = EFAIL;
+//    ptr = tSLInformation.pucTxCommandBuffer;
+//
+//    hci_command_send(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_STOP, ptr, 0);
+//
+//
+//   	//
+//	// Wait for command complete event
+//	//
+//	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_STOP, &ret);
+//
+//    return(ret);
+//}
 
-    
-   	//
-	// Wait for command complete event
-	//
-	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_STATUSGET, &ret);
-
-    return(ret);    
-}
-#endif
-/**
- * \brief Start acquire profile
- *
- * Start to acquire device profile. Device scans messages from 
- * station with specific prefix SSID 
- * (wlan_simple_config_set_prefix). The device acquire his own 
- * profile, if profile message is found. The acquired AP information is
- * stored in the profiles table of CC3000.After the profile is acquired the
- * behavior is as defined by policy. \n 
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned 
- * \sa   wlan_firs_time_config_set_prefix  wlan_first_time_config_stop
- * \note    An asynchnous event - First Time Config Done will be generated as soon as the process finishes successfully
- * \warning     
- */
-long
-wlan_first_time_config_start(void)
-{
-    long ret;
-    unsigned char *ptr;
-
-    ret = EFAIL;
-    ptr = tSLInformation.pucTxCommandBuffer;
-
-    hci_command_send(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_START, ptr, 0);
-
-    
-   	//
-	// Wait for command complete event
-	//
-	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_START, &ret);
-
-    return(ret);    
-}
-
-
-/**
- * \brief stop acquire profile 
- *  
- * Stop the acquire profile procedure 
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned 
- *
- * \sa   wlan_fisrt_time_config_start  wlan_first_time_config_set_prefix
- * \note      
- * \warning     
- */
-long
-wlan_first_time_config_stop(void)
-{
-    long ret;
-    unsigned char *ptr;
-
-    ret = EFAIL;
-    ptr = tSLInformation.pucTxCommandBuffer;
-
-    hci_command_send(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_STOP, ptr, 0);
-
-    
-   	//
-	// Wait for command complete event
-	//
-	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_STOP, &ret);
-
-    return(ret);    
-}
-
-/**
- * \brief config set prefix
- *  
- * Configure station ssid prefix. The prefix is used to identify
- * the station that broadcast device profile. 
- *
- * \param[in] newPrefix  3 bytes identify the SSID prefix for 
- *       the Simple Config.
- *  
- * \return  On success, zero is returned. On error, -1 is 
- *            returned   
- *
- * \sa   wlan_fist_time_config_start  wlan_first_time_config_stop
- * \note        The prefix is stored in CC3000 NVMEM.\n
- * \warning     
- */
-
-long
-wlan_first_time_config_set_prefix(char* cNewPrefix)
-{
-    long ret;
-    unsigned char *ptr;
-    unsigned char *args;
-
-    ret = EFAIL;
-    ptr = tSLInformation.pucTxCommandBuffer;
-    args = (ptr + HEADERS_SIZE_CMD);
-    
-    if (cNewPrefix == NULL)
-        return ret;
-
-	ARRAY_TO_STREAM(args, cNewPrefix, SL_SIMPLE_CONFIG_PREFIX_LENGTH);
-
-    hci_command_send(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_SET_PREFIX, ptr, SL_SIMPLE_CONFIG_PREFIX_LENGTH);
-
-   	//
-	// Wait for command complete event
-	//
-	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_SET_PREFIX, &ret);
-
-    return(ret);    
-}
+///**
+// * \brief config set prefix
+// *
+// * Configure station ssid prefix. The prefix is used to identify
+// * the station that broadcast device profile.
+// *
+// * \param[in] newPrefix  3 bytes identify the SSID prefix for
+// *       the Simple Config.
+// *
+// * \return  On success, zero is returned. On error, -1 is
+// *            returned
+// *
+// * \sa   wlan_fist_time_config_start  wlan_first_time_config_stop
+// * \note        The prefix is stored in CC3000 NVMEM.\n
+// * \warning
+// */
+//
+//long
+//wlan_first_time_config_set_prefix(char* cNewPrefix)
+//{
+//    long ret;
+//    unsigned char *ptr;
+//    unsigned char *args;
+//
+//    ret = EFAIL;
+//    ptr = tSLInformation.pucTxCommandBuffer;
+//    args = (ptr + HEADERS_SIZE_CMD);
+//
+//    if (cNewPrefix == NULL)
+//        return ret;
+//
+//	ARRAY_TO_STREAM(args, cNewPrefix, SL_SIMPLE_CONFIG_PREFIX_LENGTH);
+//
+//    hci_command_send(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_SET_PREFIX, ptr, SL_SIMPLE_CONFIG_PREFIX_LENGTH);
+//
+//   	//
+//	// Wait for command complete event
+//	//
+//	SimpleLinkWaitEvent(HCI_CMND_WLAN_IOCTL_SIMPLE_CONFIG_SET_PREFIX, &ret);
+//
+//    return(ret);
+//}
 
 //*****************************************************************************
 //

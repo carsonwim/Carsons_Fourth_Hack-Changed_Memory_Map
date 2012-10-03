@@ -8,7 +8,7 @@
 //*****************************************************************************
 #include "hci.h"
 #include "spi.h"
-#include "os.h"
+//#include "os.h"
 #include "evnt_handler.h"
 #include <msp430.h>
 

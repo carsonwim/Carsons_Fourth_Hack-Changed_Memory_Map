@@ -13,23 +13,23 @@
 #include "wlan.h"
 #include "evnt_handler.h"
 
-//*****************************************************************************
-//
-//! void __error__(char *pcFilename, unsigned long ulLine)
-//!
-//!  \param  pcFilename - file name, where error occurred
-//!  \param  ulLine     - line number, where error occurred
-//!
-//!  \return none
-//!
-//!  \brief stub function for ASSERT macro
-//
-//*****************************************************************************
-void
-__error__(char *pcFilename, unsigned long ulLine)
-{
-    //TODO full up function
-}
+////*****************************************************************************
+////
+////! void __error__(char *pcFilename, unsigned long ulLine)
+////!
+////!  \param  pcFilename - file name, where error occurred
+////!  \param  ulLine     - line number, where error occurred
+////!
+////!  \return none
+////!
+////!  \brief stub function for ASSERT macro
+////
+////*****************************************************************************
+//void
+//__error__(char *pcFilename, unsigned long ulLine)
+//{
+//    //TODO full up function
+//}
 
 
 void 

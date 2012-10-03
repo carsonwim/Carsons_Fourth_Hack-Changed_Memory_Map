@@ -2,7 +2,7 @@
 #include "msp430fr5739.h"
 #include "wlan.h"
 #include "evnt_handler.h"    // callback function declaration
-#include "nvmem.h"
+//#include "nvmem.h"
 #include "socket.h"
 #include "common.h"
 #include "netapp.h"

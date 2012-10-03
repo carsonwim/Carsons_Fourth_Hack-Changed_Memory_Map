@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-#define HOSTNAME_MAX_LENGTH (230)  // 230 bytes + header shouldn't exceed 8 bit value
+//#define HOSTNAME_MAX_LENGTH (230)  // 230 bytes + header shouldn't exceed 8 bit value
 
 //--------- Address Families --------
 
@@ -297,136 +297,136 @@ extern long bind(long sd, const sockaddr *addr, long addrlen);
 extern long listen(long sd, long backlog);
 
 
-/**
- * \brief initiate a connection on a socket 
- *  
- * Function connects the socket referred to by the socket 
- * descriptor sd, to the address specified by addr. The addrlen 
- * argument specifies the size of addr. The format of the 
- * address in addr is determined by the address space of the 
- * socket. If it is of type SOCK_DGRAM, this call specifies the 
- * peer with which the socket is to be associated; this address 
- * is that to which datagrams are to be sent, and the only 
- * address from which datagrams are to be received.  If the 
- * socket is of type SOCK_STREAM, this call attempts to make a 
- * connection to another socket. The other socket is specified 
- * by address, which is an address in the com- munications space 
- * of the socket. Note that the function implements only blocking
- * bheavior thus the caller will be waiting either for the connection 
- * establishement or for the connection establishement failure.
- *  
- *  
- * \param[in] sd                socket descriptor (handle)
- * \param[in] addr              specifies the destination addr\n
- *                              sockaddr:\n - code for the
- *                              address format. On this version
- *                              only AF_INET is supported.\n -
- *                              socket address, the length
- *                              depends on the code format
- *  
- * \param[in] addrlen           contains the size of the 
- *       structure pointed to by addr
- *
- * \return   On success, zero is returned. On error, -1 is 
- *              returned
- *
- * \sa socket
- * \note
- * \warning
- */
-extern long connect(long sd, const sockaddr *addr, long addrlen);
+///**
+// * \brief initiate a connection on a socket
+// *
+// * Function connects the socket referred to by the socket
+// * descriptor sd, to the address specified by addr. The addrlen
+// * argument specifies the size of addr. The format of the
+// * address in addr is determined by the address space of the
+// * socket. If it is of type SOCK_DGRAM, this call specifies the
+// * peer with which the socket is to be associated; this address
+// * is that to which datagrams are to be sent, and the only
+// * address from which datagrams are to be received.  If the
+// * socket is of type SOCK_STREAM, this call attempts to make a
+// * connection to another socket. The other socket is specified
+// * by address, which is an address in the com- munications space
+// * of the socket. Note that the function implements only blocking
+// * bheavior thus the caller will be waiting either for the connection
+// * establishement or for the connection establishement failure.
+// *
+// *
+// * \param[in] sd                socket descriptor (handle)
+// * \param[in] addr              specifies the destination addr\n
+// *                              sockaddr:\n - code for the
+// *                              address format. On this version
+// *                              only AF_INET is supported.\n -
+// *                              socket address, the length
+// *                              depends on the code format
+// *
+// * \param[in] addrlen           contains the size of the
+// *       structure pointed to by addr
+// *
+// * \return   On success, zero is returned. On error, -1 is
+// *              returned
+// *
+// * \sa socket
+// * \note
+// * \warning
+// */
+//extern long connect(long sd, const sockaddr *addr, long addrlen);
 
-/**
- * \brief Monitor socket activity
- *  
- * Select allow a program to monitor multiple file descriptors,
- * waiting until one or more of the file descriptors become 
- * "ready" for some class of I/O operation 
- *  
- *  
- * \param[in] nfds           the highest-numbered file descriptor in any of the
- *                           three sets, plus 1.
- * \param[out] writesds      socket descriptors list for write 
- *       monitoring
- * \param[out] readsds       socket descriptors list for read 
- *       monitoring
- * \param[out] exceptsds     socket descriptors list for 
- *       exception monitoring
- * \param[in] timeout        is an upper bound on the amount of time elapsed
- *                           before select() returns. Null means infinity 
- *                           timeout. The minimum timeout is 5 milliseconds,
- *                           less than 5 milliseconds will be set
- *                           automatically to 5 milliseconds.
- *  
- * \return						On success, select()  returns the number of
- *                      file descriptors contained in the three returned
- *                      descriptor sets (that is, the total number of bits that
- *                      are set in readfds, writefds, exceptfds) which may be
- *                      zero if the timeout expires before anything interesting
- *                      happens. On error, -1 is returned.
- *                      readsds - return the sockets on which Read request will
- *                                return without delay with valid data.
- *                      writesds - return the sockets on which Write request 
- *                                 will return without delay.
- *                      exceptsds - return the sockets wich closed recently. 
- *
- * \sa socket
- * \note  If the timeout value set to less than 5ms it will 
- *  automatically set to 5ms to prevent overload of the system
- *  
- * \warning
- */
-extern int select(long nfds, fd_set *readsds, fd_set *writesds,
-                  fd_set *exceptsds, struct timeval *timeout);
+///**
+// * \brief Monitor socket activity
+// *
+// * Select allow a program to monitor multiple file descriptors,
+// * waiting until one or more of the file descriptors become
+// * "ready" for some class of I/O operation
+// *
+// *
+// * \param[in] nfds           the highest-numbered file descriptor in any of the
+// *                           three sets, plus 1.
+// * \param[out] writesds      socket descriptors list for write
+// *       monitoring
+// * \param[out] readsds       socket descriptors list for read
+// *       monitoring
+// * \param[out] exceptsds     socket descriptors list for
+// *       exception monitoring
+// * \param[in] timeout        is an upper bound on the amount of time elapsed
+// *                           before select() returns. Null means infinity
+// *                           timeout. The minimum timeout is 5 milliseconds,
+// *                           less than 5 milliseconds will be set
+// *                           automatically to 5 milliseconds.
+// *
+// * \return						On success, select()  returns the number of
+// *                      file descriptors contained in the three returned
+// *                      descriptor sets (that is, the total number of bits that
+// *                      are set in readfds, writefds, exceptfds) which may be
+// *                      zero if the timeout expires before anything interesting
+// *                      happens. On error, -1 is returned.
+// *                      readsds - return the sockets on which Read request will
+// *                                return without delay with valid data.
+// *                      writesds - return the sockets on which Write request
+// *                                 will return without delay.
+// *                      exceptsds - return the sockets wich closed recently.
+// *
+// * \sa socket
+// * \note  If the timeout value set to less than 5ms it will
+// *  automatically set to 5ms to prevent overload of the system
+// *
+// * \warning
+// */
+//extern int select(long nfds, fd_set *readsds, fd_set *writesds,
+//                  fd_set *exceptsds, struct timeval *timeout);
 
-/**
- * \brief set socket options
- *
- * This function manipulate the options associated with a socket.
- * Options may exist at multiple protocol levels; they are always
- * present at the uppermost socket level.
- *
- * When manipulating socket options the level at which the option resides
- * and the name of the option must be specified.  To manipulate options at
- * the socket level, level is specified as SOL_SOCKET.  To manipulate
- * options at any other level the protocol number of the appropriate proto-
- * col controlling the option is supplied.  For example, to indicate that an
- * option is to be interpreted by the TCP protocol, level should be set to
- * the protocol number of TCP; 
- *
- * The parameters optval and optlen are used to access optval - 
- * ues for setsockopt().  For getsockopt() they identify a 
- * buffer in which the value for the requested option(s) are to 
- * be returned.  For getsockopt(), optlen is a value-result 
- * parameter, initially contain- ing the size of the buffer 
- * pointed to by option_value, and modified on return to 
- * indicate the actual size of the value returned. This value returns in network order. 
- * If no option value is to be supplied or returned, option_value may be  NULL. 
- *
- *  
- * \param[in] sd                socket handle
- * \param[in] level             defines the protocol level for this option
- * \param[in] optname           defines the option name to interogate
- * \param[in] optval            specifies a value for the option
- * \param[in] optlen            specifies the length of the 
- *       option value
- *
- * \return   On success, zero is returned. On error, -1 is 
- *            returned 
- * \sa getsockopt
- * \note On this version the following socket options are enabled:
- *			- SOL_SOCKET (optname). SOL_SOCKET configures socket level
- *			- SOCKOPT_RECV_TIMEOUT (optname)
- *			  SOCKOPT_RECV_TIMEOUT configures recv and recvfrom timeout. 
- *			  In that case optval should be pointer to unsigned long
- *			- SOCK_NONBLOCK (optname). set socket non-blocking mode is on or off.
- *			  SOCK_ON or SOCK_OFF (optval)
- * \warning
- */
-#ifndef CC3000_TINY_DRIVER 
-extern int setsockopt(long sd, long level, long optname, const void *optval,
-                      socklen_t optlen);
-#endif
+///**
+// * \brief set socket options
+// *
+// * This function manipulate the options associated with a socket.
+// * Options may exist at multiple protocol levels; they are always
+// * present at the uppermost socket level.
+// *
+// * When manipulating socket options the level at which the option resides
+// * and the name of the option must be specified.  To manipulate options at
+// * the socket level, level is specified as SOL_SOCKET.  To manipulate
+// * options at any other level the protocol number of the appropriate proto-
+// * col controlling the option is supplied.  For example, to indicate that an
+// * option is to be interpreted by the TCP protocol, level should be set to
+// * the protocol number of TCP;
+// *
+// * The parameters optval and optlen are used to access optval -
+// * ues for setsockopt().  For getsockopt() they identify a
+// * buffer in which the value for the requested option(s) are to
+// * be returned.  For getsockopt(), optlen is a value-result
+// * parameter, initially contain- ing the size of the buffer
+// * pointed to by option_value, and modified on return to
+// * indicate the actual size of the value returned. This value returns in network order.
+// * If no option value is to be supplied or returned, option_value may be  NULL.
+// *
+// *
+// * \param[in] sd                socket handle
+// * \param[in] level             defines the protocol level for this option
+// * \param[in] optname           defines the option name to interogate
+// * \param[in] optval            specifies a value for the option
+// * \param[in] optlen            specifies the length of the
+// *       option value
+// *
+// * \return   On success, zero is returned. On error, -1 is
+// *            returned
+// * \sa getsockopt
+// * \note On this version the following socket options are enabled:
+// *			- SOL_SOCKET (optname). SOL_SOCKET configures socket level
+// *			- SOCKOPT_RECV_TIMEOUT (optname)
+// *			  SOCKOPT_RECV_TIMEOUT configures recv and recvfrom timeout.
+// *			  In that case optval should be pointer to unsigned long
+// *			- SOCK_NONBLOCK (optname). set socket non-blocking mode is on or off.
+// *			  SOCK_ON or SOCK_OFF (optval)
+// * \warning
+// */
+//#ifndef CC3000_TINY_DRIVER
+//extern int setsockopt(long sd, long level, long optname, const void *optval,
+//                      socklen_t optlen);
+//#endif
 /**
  * \brief get socket options
  *
@@ -498,40 +498,40 @@ extern int getsockopt(long sd, long level, long optname, void *optval,
  */
 extern int recv(long sd, void *buf, long len, long flags);
 
-/**
- * \brief read data from socket
- *
- * function receives a message from a connection-mode or
- * connectionless-mode socket. Note that raw sockets are not
- * supported.
- * 
- * \param[in] sd                socket handle 
- * \param[out] buf              Points to the buffer where the message should be stored.
- * \param[in] len               Specifies the length in bytes of the buffer pointed to by the buffer argument. 
- * \param[in] flags             Specifies the type of message
- *       reception. On this version, this parameter is not
- *       supported.
- * \param[in] from              pointer to an address structure 
- *                              indicating the source
- *                              address.\n sockaddr:\n - code
- *                              for the address format. On this
- *                              version only AF_INET is
- *                              supported.\n - socket address,
- *                              the length depends on the code
- *                              format
- * \param[in] fromlen           source address strcutre
- *       size
- * 
- *
- * \return   return the number of bytes received, 0 if timeout 
- *           occurred or 1 if an error occurred
- *
- * \sa   recv
- * \note   On this version, only blocking mode is supported.
- * \warning
- */
-extern int recvfrom(long sd, void *buf, long len, long flags, sockaddr *from, 
-                    socklen_t *fromlen);
+///**
+// * \brief read data from socket
+// *
+// * function receives a message from a connection-mode or
+// * connectionless-mode socket. Note that raw sockets are not
+// * supported.
+// *
+// * \param[in] sd                socket handle
+// * \param[out] buf              Points to the buffer where the message should be stored.
+// * \param[in] len               Specifies the length in bytes of the buffer pointed to by the buffer argument.
+// * \param[in] flags             Specifies the type of message
+// *       reception. On this version, this parameter is not
+// *       supported.
+// * \param[in] from              pointer to an address structure
+// *                              indicating the source
+// *                              address.\n sockaddr:\n - code
+// *                              for the address format. On this
+// *                              version only AF_INET is
+// *                              supported.\n - socket address,
+// *                              the length depends on the code
+// *                              format
+// * \param[in] fromlen           source address strcutre
+// *       size
+// *
+// *
+// * \return   return the number of bytes received, 0 if timeout
+// *           occurred or 1 if an error occurred
+// *
+// * \sa   recv
+// * \note   On this version, only blocking mode is supported.
+// * \warning
+// */
+//extern int recvfrom(long sd, void *buf, long len, long flags, sockaddr *from,
+//                    socklen_t *fromlen);
 
 /**
  * \brief write data to TCP socket
@@ -557,63 +557,63 @@ extern int recvfrom(long sd, void *buf, long len, long flags, sockaddr *from,
 
 extern int send(long sd, const void *buf, long len, long flags);
 
-/**
- * \brief write data to socket
- *
- * This function is used to transmit a message to another socket
- * (connection less socket SOCK_DGRAM,  SOCK_RAW). 
- *
- * \param[in] sd                socket handle
- * \param[in] buf               Points to a buffer containing 
- *       the message to be sent
- * \param[in] len               message size in bytes. Range: 1-1460 bytes
- * \param[in] flags             Specifies the type of message 
- *       transmission. On this version, this parameter is not
- *       supported 
- * \param[in] to                pointer to an address structure 
- *                              indicating the destination
- *                              address.\n sockaddr:\n - code
- *                              for the address format. On this
- *                              version only AF_INET is
- *                              supported.\n - socket address,
- *                              the length depends on the code
- *                              format
- * \param[in] tolen             destination address strcutre size 
- *
- * \return   Return the number of transmitted bytes, or
- *           -1 if an error occurred
- *
- * \sa   send write
- * \note   On this version only, blocking mode is supported.
- * \warning
- */
+///**
+// * \brief write data to socket
+// *
+// * This function is used to transmit a message to another socket
+// * (connection less socket SOCK_DGRAM,  SOCK_RAW).
+// *
+// * \param[in] sd                socket handle
+// * \param[in] buf               Points to a buffer containing
+// *       the message to be sent
+// * \param[in] len               message size in bytes. Range: 1-1460 bytes
+// * \param[in] flags             Specifies the type of message
+// *       transmission. On this version, this parameter is not
+// *       supported
+// * \param[in] to                pointer to an address structure
+// *                              indicating the destination
+// *                              address.\n sockaddr:\n - code
+// *                              for the address format. On this
+// *                              version only AF_INET is
+// *                              supported.\n - socket address,
+// *                              the length depends on the code
+// *                              format
+// * \param[in] tolen             destination address strcutre size
+// *
+// * \return   Return the number of transmitted bytes, or
+// *           -1 if an error occurred
+// *
+// * \sa   send write
+// * \note   On this version only, blocking mode is supported.
+// * \warning
+// */
+//
+//extern int sendto(long sd, const void *buf, long len, long flags,
+//                  const sockaddr *to, socklen_t tolen);
 
-extern int sendto(long sd, const void *buf, long len, long flags, 
-                  const sockaddr *to, socklen_t tolen);
 
-
-/**
- * \brief get host IP by name
- *
- * Obtain the IP Address of machine on network, by its name.
- *  
- * \param[in]  hostname       host name            
- * \param[in]  usNameLen      name length      
- * \param[out] out_ip_addr    This parameter is filled in with 
- *       host IP address. In case that host name is not
- *       resolved, out_ip_addr is zero.
- *
- * \return   On success, positive is returned. On error, 
- *           negative is returned
- *  
- * \sa
- * \note   On this version only, blocking mode is supported. Also note that
- *		the function requires DNS server to be configured prior to its usage.
- * \warning
- */
-#ifndef CC3000_TINY_DRIVER 
-extern int gethostbyname(char * hostname, unsigned short usNameLen, unsigned long* out_ip_addr);
-#endif
+///**
+// * \brief get host IP by name
+// *
+// * Obtain the IP Address of machine on network, by its name.
+// *
+// * \param[in]  hostname       host name
+// * \param[in]  usNameLen      name length
+// * \param[out] out_ip_addr    This parameter is filled in with
+// *       host IP address. In case that host name is not
+// *       resolved, out_ip_addr is zero.
+// *
+// * \return   On success, positive is returned. On error,
+// *           negative is returned
+// *
+// * \sa
+// * \note   On this version only, blocking mode is supported. Also note that
+// *		the function requires DNS server to be configured prior to its usage.
+// * \warning
+// */
+//#ifndef CC3000_TINY_DRIVER
+//extern int gethostbyname(char * hostname, unsigned short usNameLen, unsigned long* out_ip_addr);
+//#endif
 //*****************************************************************************
 //
 // Close the Doxygen group.

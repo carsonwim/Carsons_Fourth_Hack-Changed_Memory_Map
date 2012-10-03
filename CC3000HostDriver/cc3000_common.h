@@ -90,8 +90,10 @@ extern "C" {
   
 //if defined TINY DRIVER we use smaller rx and tx buffer in order to minimize RAM consumption
 #else
-	#define CC3000_RX_BUFFER_SIZE   (TINY_CC3000_MAXIMAL_RX_SIZE)
-	#define CC3000_TX_BUFFER_SIZE   (TINY_CC3000_MAXIMAL_TX_SIZE)
+//	#define CC3000_RX_BUFFER_SIZE   (TINY_CC3000_MAXIMAL_RX_SIZE)
+//	#define CC3000_TX_BUFFER_SIZE   (TINY_CC3000_MAXIMAL_TX_SIZE)
+	#define CC3000_RX_BUFFER_SIZE   (CC3000_MINIMAL_RX_SIZE)
+	#define CC3000_TX_BUFFER_SIZE   (CC3000_MAXIMAL_TX_SIZE)
 
 #endif  
 //*****************************************************************************

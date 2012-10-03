@@ -3,7 +3,7 @@
 #include <msp430.h>
 #include "wlan.h" 
 #include "evnt_handler.h"    // callback function declaration
-#include "nvmem.h"
+//#include "nvmem.h"S
 #include "socket.h"
 
 #include "netapp.h"
@@ -12,7 +12,7 @@
 
 
 #define FRAM_FORCED_RES_ADDRESS       0x1840
-#define FIRST_TIME_CONFIG_SET 0xAA
+
 
 unsigned char * msp430_forced_restart_ptr = (unsigned char *)FRAM_FORCED_RES_ADDRESS;  
 extern unsigned char * ptrFtcAtStartup;
@@ -78,12 +78,7 @@ void pio_init()
 	SPI_CS_PORT_DIR |= SPI_CS_PIN;
 	SPI_CS_PORT_SEL2 &= ~SPI_CS_PIN; 
 	SPI_CS_PORT_SEL &= ~SPI_CS_PIN;
-
-    
-    __delay_cycles(12000000);
-    
-
-
+    __delay_cycles(1200000);
 
     initLEDs();
     
@@ -458,7 +453,7 @@ long IsFTCflagSet()
 //*****************************************************************************
 void SetFTCflag()
 {  
-   *ptrFtcAtStartup = FIRST_TIME_CONFIG_SET;                              //  set FTC flag  
+//   *ptrFtcAtStartup = FIRST_TIME_CONFIG_SET;                              //  set FTC flag
 }
 
 //*****************************************************************************

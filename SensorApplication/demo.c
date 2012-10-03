@@ -36,7 +36,7 @@
 #include <msp430.h>
 #include "wlan.h" 
 #include "evnt_handler.h"    // callback function declaration
-#include "nvmem.h"
+//#include "nvmem.h"
 #include "socket.h"
 #include "common.h"
 #include "netapp.h"
@@ -51,6 +51,8 @@
 #include "version.h"
 #include "spi.h"
 #include "carsons_file.h"
+
+//#define CC3000_TINY_DRIVER
 
 /** \brief Flag indicating whether user requested to perform FTC */
 char runFirstTimeConfig = 0;

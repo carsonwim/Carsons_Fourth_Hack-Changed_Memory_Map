@@ -4,7 +4,7 @@
 #include "msp430fr5739.h"
 #include "wlan.h" 
 #include "evnt_handler.h"    // callback function declaration
-#include "nvmem.h"
+//#include "nvmem.h"
 #include "socket.h"
 #include "common.h"
 #include "netapp.h"
@@ -25,11 +25,10 @@ long serverSocket;
 sockaddr serverSocketAddr;
 
 /** \brief Definition of data packet to be sent by server */
-//unsigned char dataPacket[] = { '\n', 0xBE,'1','2','3','4','5', 0xEF };
-unsigned char dataPacket[60] = "AAAAAAAAA1AAAAAAAAA2AAAAAAAAA3AAAAAAAAA4AAAAAAAAA5AAAAAAAAA6";
+// Packet Structure: <Command 1 Byte><Size of data 2 bytes><Missed Data 2 bytes><Data of whatever size>
+unsigned char dataPacket[] = { 0x01,0x00 ,0x05,0x00,0x00,0x01,0x02,0x03,0x04,0x05};
 
-
-
+//unsigned char dataPacket[60] = "AAAAAAAAA1AAAAAAAAA2AAAAAAAAA3AAAAAAAAA4AAAAAAAAA5AAAAAAAAA6";
 
 char serverErrorCode = 0;
 
@@ -152,11 +151,11 @@ void waitForConnection(void)
                 bytesRecvd = recv(clientDescriptor, requestBuffer, sizeof(requestBuffer), 0);
 
                 if(currentCC3000State() & CC3000_CLIENT_CONNECTED){
-					//bytesSent = send(clientDescriptor, (unsigned char *)dataPacket, sizeof(dataPacket), 0);
-					bytesSent = send(clientDescriptor, buffer1_ptr, quantity, 0);
+					bytesSent = send(clientDescriptor, (unsigned char *)dataPacket, sizeof(dataPacket), 0);
+//					bytesSent = send(clientDescriptor, buffer1_ptr, quantity, 0);
 					toggleLed(CC3000_SENDING_DATA_IND);
-//					if (bytesSent != sizeof(dataPacket))
-					if (bytesSent != quantity)
+					if (bytesSent != sizeof(dataPacket))
+//					if (bytesSent != quantity)
 					{	// Check if socket is still available
 						curSocket =  getsockopt(clientDescriptor, SOL_SOCKET, SOCK_DGRAM , &optval, (socklen_t*)&optlen);
 						if (curSocket != 0)
