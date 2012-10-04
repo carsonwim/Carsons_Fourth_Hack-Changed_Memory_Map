@@ -26,7 +26,7 @@ sockaddr serverSocketAddr;
 
 /** \brief Definition of data packet to be sent by server */
 // Packet Structure: <Command 1 Byte><Size of data 2 bytes><Missed Data 2 bytes><Data of whatever size>
-unsigned char dataPacket[] = { 0x01,0x00 ,0x05,0x00,0x00,0x01,0x02,0x03,0x04,0x05};
+unsigned char dataPacket[] = { 0x01,   0x05,0x00,    0x00,0x00,    0x01,0x02,0x03,0x04,0x05};
 
 //unsigned char dataPacket[60] = "AAAAAAAAA1AAAAAAAAA2AAAAAAAAA3AAAAAAAAA4AAAAAAAAA5AAAAAAAAA6";
 

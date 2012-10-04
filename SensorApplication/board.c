@@ -11,11 +11,11 @@
 #include "carsons_file.h"
 
 
-#define FRAM_FORCED_RES_ADDRESS       0x1840
-
-
-unsigned char * msp430_forced_restart_ptr = (unsigned char *)FRAM_FORCED_RES_ADDRESS;  
-extern unsigned char * ptrFtcAtStartup;
+//#define FRAM_FORCED_RES_ADDRESS       0x1840
+//
+//
+//unsigned char * msp430_forced_restart_ptr = (unsigned char *)FRAM_FORCED_RES_ADDRESS;
+//extern unsigned char * ptrFtcAtStartup;
 //*****************************************************************************
 //
 //! pio_init
@@ -30,33 +30,33 @@ extern unsigned char * ptrFtcAtStartup;
 //hello
 void pio_init()
 {
-	 // Init the device with 24MHz DCOCLCK.
-	 initClk();
+
+	 initClk(); // Init the device with 24MHz DCOCLCK.
     // Enable switches
     // P4.0 and P4.1 are configured as switches
     // Port 4 has only two pins    
-    P4OUT |= BIT0;                      // Configure pullup resistor  
-    P4DIR &= ~(BIT0);                  // Direction = input
-    P4REN |= BIT0;                     // Enable pullup resistor
-    P4IES |= (BIT0);                   // P4.0 Hi/Lo edge interrupt  
-    P4IFG = 0;                         // P4 IFG cleared
-    P4IE = BIT0;                       // P4.0 interrupt enabled
+//    P4OUT |= BIT0;                      // Configure pullup resistor
+//    P4DIR &= ~(BIT0);                  // Direction = input
+//    P4REN |= BIT0;                     // Enable pullup resistor
+//    P4IES |= (BIT0);                   // P4.0 Hi/Lo edge interrupt
+//    P4IFG = 0;                         // P4 IFG cleared
+//    P4IE = BIT0;                       // P4.0 interrupt enabled
     
     // Enable First Time Config Prefix changing jumper
     // To detect if pulled high by VCC
     
     // P3.3 is our High signal
-    P3DIR |= BIT3;
-    P3OUT |= BIT3;
-        
+//    P3DIR |= BIT3;
+//    P3OUT |= BIT3;
+//
     // P3.2 Configure pulled low and will detect a hi/low transition
     
-    P3DIR &= ~(BIT2);             // P3.2 As Input
-    P3OUT &= ~(BIT2);             // P3.2 With Pulldown
-    P3REN |= BIT2;                // P3.2 Enable Pulldown
-    P3IES &= ~(BIT2);             // P3.2 Lo/Hi edge interrupt
-    P3IFG &= ~(BIT2);             // P3.2 IFG cleared
-    P3IE |= BIT2;                 // P3.2 interrupt enabled
+//    P3DIR &= ~(BIT2);             // P3.2 As Input
+//    P3OUT &= ~(BIT2);             // P3.2 With Pulldown
+//    P3REN |= BIT2;                // P3.2 Enable Pulldown
+//    P3IES &= ~(BIT2);             // P3.2 Lo/Hi edge interrupt
+//    P3IFG &= ~(BIT2);             // P3.2 IFG cleared
+//    P3IE |= BIT2;                 // P3.2 interrupt enabled
     
 
     
@@ -243,39 +243,39 @@ void initClk(void)
 
 }
 
-//*****************************************************************************
-//
-//! \brief  Starts timer that handles switch debouncing
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//
-//*****************************************************************************
-void StartDebounceTimer()
-{  
-    // default delay = 0
-    // Debounce time = 1500* 1/8000 = ~200ms
-    TB0CCTL0 = CCIE;                          // TACCR0 interrupt enabled
-    TB0CCR0 = 3000;
-    TB0CTL = TBSSEL_1 + MC_1;                 // SMCLK, continuous mode
-}
+////*****************************************************************************
+////
+////! \brief  Starts timer that handles switch debouncing
+////!
+////! \param  none
+////!
+////! \return none
+////!
+////
+////*****************************************************************************
+//void StartDebounceTimer()
+//{
+//    // default delay = 0
+//    // Debounce time = 1500* 1/8000 = ~200ms
+//    TB0CCTL0 = CCIE;                          // TACCR0 interrupt enabled
+//    TB0CCR0 = 3000;
+//    TB0CTL = TBSSEL_1 + MC_1;                 // SMCLK, continuous mode
+//}
 
-//*****************************************************************************
-//
-//! \brief  Stops timer that handles switch debouncing
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//
-//*****************************************************************************
-void StopDebounceTimer()
-{  
-    TB0CCTL0 &= ~CCIE;                          // TACCR0 interrupt enabled
-}
+////*****************************************************************************
+////
+////! \brief  Stops timer that handles switch debouncing
+////!
+////! \param  none
+////!
+////! \return none
+////!
+////
+////*****************************************************************************
+//void StopDebounceTimer()
+//{
+//    TB0CCTL0 &= ~CCIE;                          // TACCR0 interrupt enabled
+//}
 
 //*****************************************************************************
 //
@@ -424,117 +424,117 @@ void toggleLed(char ledNum)
     }
 }
 
-//*****************************************************************************
+////*****************************************************************************
+////
+////! \brief  check if FTC flag was set
+////!
+////! \param  none
+////!
+////! \return indication if flag is set
+////!
+////
+////*****************************************************************************
+//long IsFTCflagSet()
+//{
 //
-//! \brief  check if FTC flag was set
-//!
-//! \param  none
-//!
-//! \return indication if flag is set
-//!
+//  return (P4OUT&BIT0) ;                                //  check if FTC flag is configure
 //
-//*****************************************************************************
-long IsFTCflagSet()
-{  
+//}
 
-  return (P4OUT&BIT0) ;                                //  check if FTC flag is configure
+////*****************************************************************************
+////
+////! \brief  set FTC flag when S2 was pressed
+////!
+////! \param  none
+////!
+////! \return none
+////!
+////
+////*****************************************************************************
+//void SetFTCflag()
+//{
+////   *ptrFtcAtStartup = FIRST_TIME_CONFIG_SET;                              //  set FTC flag
+//}
 
-}
-
-//*****************************************************************************
-//
-//! \brief  set FTC flag when S2 was pressed
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//
-//*****************************************************************************
-void SetFTCflag()
-{  
-//   *ptrFtcAtStartup = FIRST_TIME_CONFIG_SET;                              //  set FTC flag
-}
-
-//*****************************************************************************
-//
-//! \brief  clear FTC flag when S2 was pressed
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//
-//*****************************************************************************
-void ClearFTCflag()
-{  
-  *ptrFtcAtStartup = 0xFF;                             //  clear FTC flag  
-}
+////*****************************************************************************
+////
+////! \brief  clear FTC flag when S2 was pressed
+////!
+////! \param  none
+////!
+////! \return none
+////!
+////
+////*****************************************************************************
+//void ClearFTCflag()
+//{
+//  *ptrFtcAtStartup = 0xFF;                             //  clear FTC flag
+//}
 
   
-//*****************************************************************************
+////*****************************************************************************
+////
+////! \brief  Dissable S2 switch interrupt
+////!
+////! \param  none
+////!
+////! \return none
+////!
+////
+////*****************************************************************************
+//void DissableSwitch()
+//{
+//            // disable switch interrupt
 //
-//! \brief  Dissable S2 switch interrupt
-//!
-//! \param  none
-//!
-//! \return none
-//!
 //
-//*****************************************************************************
-void DissableSwitch()
-{  
-            // disable switch interrupt
-            
-            
-            P4IFG &= ~BIT0;                // Clear P4.0 IFG
-            P4IE &= ~(BIT0);               // P4.0 interrupt disabled
-            P4IFG &= ~BIT0;                // Clear P4.0 IFG
+//            P4IFG &= ~BIT0;                // Clear P4.0 IFG
+//            P4IE &= ~(BIT0);               // P4.0 interrupt disabled
+//            P4IFG &= ~BIT0;                // Clear P4.0 IFG
+//
+//
+//                P4IFG = 0;
+//}
 
-            
-                P4IFG = 0;
-}
-
-//*****************************************************************************
+////*****************************************************************************
+////
+////! \brief  Restore S2 switch interrupt
+////!
+////! \param  none
+////!
+////! \return none
+////!
+////
+////*****************************************************************************
+//void RestoreSwitch()
+//{
 //
-//! \brief  Restore S2 switch interrupt
-//!
-//! \param  none
-//!
-//! \return none
-//!
 //
-//*****************************************************************************
-void RestoreSwitch()
-{  
-          
-            
-    // Restore Switch Interrupt
-    P4IFG &= ~BIT0;                 // Clear P4.0 IFG
-    P4IE |= BIT0;                   // P4.0 interrupt enabled
-    P4IFG &= ~BIT0;                 // Clear P4.0 IFG
-
-}
-
- //*****************************************************************************
+//    // Restore Switch Interrupt
+//    P4IFG &= ~BIT0;                 // Clear P4.0 IFG
+//    P4IE |= BIT0;                   // P4.0 interrupt enabled
+//    P4IFG &= ~BIT0;                 // Clear P4.0 IFG
 //
-//! \brief  Indication if the switch is still pressed
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//
-//*****************************************************************************
-long switchIsPressed()
-{  
-          
-if(!(P1IN & BIT3))
-  return 1;
- 
-return 0;
+//}
 
-}
+// //*****************************************************************************
+////
+////! \brief  Indication if the switch is still pressed
+////!
+////! \param  none
+////!
+////! \return none
+////!
+////
+////*****************************************************************************
+//long switchIsPressed()
+//{
+//
+//if(!(P1IN & BIT3))
+//  return 1;
+//
+//return 0;
+//
+//}
 
 //*****************************************************************************
 //

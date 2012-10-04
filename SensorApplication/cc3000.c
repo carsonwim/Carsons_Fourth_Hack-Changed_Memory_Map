@@ -31,9 +31,9 @@ unsigned char pucDNS[4];
 
 sockaddr tSocketAddr;
 
-unsigned char prefixChangeFlag = 0;
-unsigned char prefixFromUser[3] = {0};
-char * ftcPrefixptr;
+//unsigned char prefixChangeFlag = 0;
+//unsigned char prefixFromUser[3] = {0};
+//char * ftcPrefixptr;
 
 tNetappIpconfigRetArgs ipinfo;
 
@@ -41,11 +41,11 @@ char debugi = 0;
 // First Time Config Prefix - Texas Instruments
 // NOTE: the actual value of the prefix may change
 // if the Prefix Change process is performed
-const char aucCC3000_prefix[3] = {'T', 'T', 'T'};
+//const char aucCC3000_prefix[3] = {'T', 'T', 'T'};
 
-#define FRAM_FTC_INFO_ADDRESS       0x1800
+//#define FRAM_FTC_INFO_ADDRESS       0x1800
 
-unsigned char *FRAM_FIRST_TIME_CONFIG_WRITTEN_ptr = (unsigned char *)FRAM_FTC_INFO_ADDRESS;   
+//unsigned char *FRAM_FIRST_TIME_CONFIG_WRITTEN_ptr = (unsigned char *)FRAM_FTC_INFO_ADDRESS;
 
 
 char cc3000state = CC3000_UNINIT;
@@ -104,29 +104,12 @@ char cc3000state = CC3000_UNINIT;
 //*****************************************************************************
 int DefaultWifiConnection(void)
 {
-//    terminalPrint("Attempting default connection: ");
-//    terminalPrint((char*)DEFAULT_OUT_OF_BOX_SSID);
-//    terminalPrint("\r\n");
-
     unsetCC3000MachineState(CC3000_ASSOC);
-
     // Disable Profiles and Fast Connect
     wlan_ioctl_set_connection_policy(0, 0, 0);
-
     wlan_disconnect();
-
     __delay_cycles(10000);
-
-    // This triggers the CC3000 to connect to specific AP with certain parameters
-    //sends a request to connect (does not necessarily connect - callback checks that for me)
-#ifndef CC3000_TINY_DRIVER
     wlan_connect(DEFAULT_AP_SECURITY, DEFAULT_OUT_OF_BOX_SSID, strlen(DEFAULT_OUT_OF_BOX_SSID), NULL, DFAULT_AP_SECURITY_KEY, strlen(DFAULT_AP_SECURITY_KEY));
-#else
-    wlan_connect(DEFAULT_OUT_OF_BOX_SSID, strlen(DEFAULT_OUT_OF_BOX_SSID));
-#endif
-    // We don't wait for connection. This is handled somewhere else (in the main
-    // loop for example).
-
     return 0;
 }
 
@@ -300,27 +283,12 @@ void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length)
 int
 initDriver(void)
 {
-//       // Init the device with 24MHz DCOCLCK.
-//          initClk();
 
-    // Init GPIO's
-    pio_init();
+
     
-    //
-    //init all layers
-    //
+    pio_init(); // Init GPIO's
     init_spi();
-    
-    // this is done for debug purpose only
-    
-    //
-    // WLAN On API Implementation
-    //
     wlan_init( CC3000_UsynchCallback, sendWLFWPatch, sendDriverPatch, sendBootLoaderPatch, ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
-    
-    //
-    // Trigger a WLAN device
-    //
     wlan_start(0);
         
 #if IP_ALLOC_METHOD == USE_DHCP

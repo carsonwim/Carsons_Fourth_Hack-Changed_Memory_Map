@@ -35,8 +35,7 @@
 
 #include <msp430.h>
 #include "wlan.h" 
-#include "evnt_handler.h"    // callback function declaration
-//#include "nvmem.h"
+#include "evnt_handler.h"
 #include "socket.h"
 #include "common.h"
 #include "netapp.h"
@@ -44,24 +43,11 @@
 #include "sensors.h"
 #include "board.h"
 #include "string.h"
-//#include "uart.h"
 #include "demo_config.h"
-//#include "terminal.h"
 #include "server.h"
 #include "version.h"
 #include "spi.h"
 #include "carsons_file.h"
-
-//#define CC3000_TINY_DRIVER
-
-/** \brief Flag indicating whether user requested to perform FTC */
-char runFirstTimeConfig = 0;
-unsigned char * ptrFtcAtStartup = (unsigned char *)0x1830;
-
-/** \brief Flag indicating whether to print CC3000 Connection info */
-unsigned char obtainIpInfoFlag = FALSE;
-
-void errorHandler();
 
 void main(void)
 {
@@ -78,27 +64,11 @@ void main(void)
     {
 
         hci_unsolicited_event_handler();// Handle any un-solicited event if required - the function shall be triggered few times in a second
+        unsolicicted_events_timer_init();
         
-        // Print out connection status
-        if(currentCC3000State() & CC3000_IP_ALLOC && obtainIpInfoFlag == FALSE)// Checks if the IP given is a valid IP
-        {            
-            unsolicicted_events_timer_disable();
-#ifndef CC3000_TINY_DRIVER//This checks if we are assigned a bad IP addres by the server. Ha ha ha. Ha been to Wits?
-            // Check if we get IP of 50.xx.xx.xx
-            if(getCC3000Info()->aucIP[3] == 50)
-            {
-               // We received a Bad IP
-                errorHandler();
-            }
-#endif               
-            // Set flag so we don't constantly obtain the IP info
-            obtainIpInfoFlag = TRUE;
-            turnLedOn(CC3000_IP_ALLOC_IND);
-            unsolicicted_events_timer_init();
-        }
-        
-        if(currentCC3000State() & CC3000_IP_ALLOC && obtainIpInfoFlag == TRUE)// THIS IS THE MAIN PIECE OF CODE!!!!
+        if(currentCC3000State() & CC3000_IP_ALLOC)
         {
+            turnLedOn(CC3000_IP_ALLOC_IND);
             unsolicicted_events_timer_disable();
             
             // Attempt to start data server
@@ -117,87 +87,3 @@ void main(void)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#pragma vector=PORT4_VECTOR
-__interrupt void Port_4(void)
-{    
-    switch(__even_in_range(P4IV,P4IV_P4IFG1))
-    {        
-        case P4IV_P4IFG0:
-            StartDebounceTimer();          //
-            // disable switch interrupt
-            DissableSwitch();
-            break;
-        
-        default:
-            break;
-    }  
-    P4IFG = 0;
-}
-
-
-
-// Timer B0 interrupt service routine
-#pragma vector = TIMER0_B0_VECTOR
-__interrupt void Timer_B (void)
-{
-    // Check whether button is still pressed. If so, First Time Config
-    // should be performed.
-    
-    if(!(switchIsPressed()))
-    {
-        // Button is still pressed, so FTC should be done        
-        runFirstTimeConfig = 1;
-        
-        if(currentCC3000State() & CC3000_SERVER_INIT)
-        {
-            // Since accept and the server is blocking,
-            // we will indicate in non-volatile FRAM that
-            // First Time Config should be run at startup.
-              SetFTCflag();
-//              terminalPrint("Restarting MSP430...\r\n");
-            restartMSP430();
-        }
-    }
-    
-    // Restore Switch Interrupt
-        RestoreSwitch();
-    
-    StopDebounceTimer();
-}
-
-//*****************************************************************************
-//
-//!  \brief  Generic Error Handler that blinks LEDs
-//!
-//!  Look at the Call Stack to see who called the Error handler
-//!
-//!  \param  None
-//!
-//!  \return none
-//!
-//
-//*****************************************************************************
-void errorHandler()
-{
-    while(1)
-    {
-        turnLedOn(CC3000_UNUSED1_IND);
-        __delay_cycles(100000);
-        toggleLed(CC3000_UNUSED1_IND);
-        __delay_cycles(100000);
-        __no_operation();
-    }
-}

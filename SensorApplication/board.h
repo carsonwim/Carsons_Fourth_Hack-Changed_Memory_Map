@@ -52,15 +52,15 @@ typedef enum
 } ledNames;
 
 void pio_init();
-void StartDebounceTimer();
-void StopDebounceTimer();
+//void StartDebounceTimer();
+//void StopDebounceTimer();
 
 void initLEDs();
-long IsFTCflagSet();
-void SetFTCflag();
-void ClearFTCflag();
-void RestoreSwitch();
-long switchIsPressed();
+//long IsFTCflagSet();
+//void SetFTCflag();
+//void ClearFTCflag();
+//void RestoreSwitch();
+//long switchIsPressed();
 long ReadWlanInterruptPin(void);
 void WlanInterruptEnable();
 void WlanInterruptDisable();
@@ -68,7 +68,7 @@ void WriteWlanPin( unsigned char val );
 void unsolicicted_events_timer_init(void);
 void unsolicicted_events_timer_disable(void);
 void initClk(void);
-void DissableSwitch();
+//void DissableSwitch();
 void turnLedOn(char ledNum);
 void turnLedOff(char ledNum);
 void toggleLed(char ledNum);
