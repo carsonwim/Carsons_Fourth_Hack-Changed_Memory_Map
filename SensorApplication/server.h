@@ -2,7 +2,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#define SERVER_RECV_BUF_SIZE 20
+#define SERVER_RECV_BUF_SIZE 7
 // SERVER ERROR
 enum serverError
 {
@@ -13,6 +13,11 @@ enum serverError
 
 void initServer(void);
 void waitForConnection(void);
+char incomingPacketManager(void);
+void setup_parrelel_sampling (void);
+void startDMAandADC (void);
+void check_socket_connection(void);
 void shutdownServer();
 void serverError(char err);
+
 #endif

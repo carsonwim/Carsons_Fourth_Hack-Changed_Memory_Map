@@ -38,10 +38,13 @@ MEMORY
 //    FRAM                    : origin = 0xC2F0, length = 0x3C90  //was   : origin = 0xC200, length = 0x3D80
 
 // Modified Memory Map
-    FRAM                    : origin = 0xC200, length = 0x2780
-    FRAM_DATA_SEND_BUFFER   : origin = 0xE980, length = 0x0800
-    FRAM_DATA_ADC_BUFFER1   : origin = 0xF180, length = 0x0700
-    FRAM_DATA_ADC_BUFFER2   : origin = 0xF880, length = 0x0700
+    FRAM                    : origin = 0xC200, length = 0x2980
+    FRAM_DATA_SEND_BUFFER   : origin = 0xEB80, length = 0x0800
+    FRAM_DATA_ADC_BUFFER0   : origin = 0xF380, length = 0x0600
+    FRAM_DATA_ADC_BUFFER1   : origin = 0xF980, length = 0x0600
+    //FRAM_DATA_SEND_BUFFER   : origin = 0xF180, length = 0x0800
+    //FRAM_DATA_ADC_BUFFER0   : origin = 0xF980, length = 0x0600
+
 
   ////FRAM_DATA_LOG           : origin = 0xEA00, length = 0x0600
 
@@ -147,8 +150,8 @@ SECTIONS
 
 	.FRAM_DATA_SEND_BUFFER : {} > FRAM_DATA_SEND_BUFFER
 	//.fram_log1  : {} > FRAM_DATA_LOG1
+	.fram_adc_buf0  : {} > FRAM_DATA_ADC_BUFFER0
 	.fram_adc_buf1  : {} > FRAM_DATA_ADC_BUFFER1
-	.fram_adc_buf2  : {} > FRAM_DATA_ADC_BUFFER2
     .infoA     : {} > INFOA              /* MSP430 INFO FRAM  MEMORY SEGMENTS */
     .infoB     : {} > INFOB
 
