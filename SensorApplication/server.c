@@ -42,7 +42,7 @@ char generalConfirmationPacket[] = { Setup_Complete, 'A','A', 'A','A'};
 char deviceconfigured = FALSE;
 char DMA0_State = NOT_DONE;
 unsigned int ammount_of_samples_in_packet = 1400;
-unsigned int ammount_packets_to_be_sent = 1000;
+unsigned int ammount_packets_to_be_sent = 1500;
 unsigned char *buffer0_ptr;
 #define BUFFER0_STR_ADD (0xF300);
 unsigned char* buffer0_ptr = (unsigned char*)BUFFER0_STR_ADD;
@@ -69,16 +69,16 @@ char serverErrorCode = 0;
 void waitForConnection(void)
 {
 	setup_parrelel_sampling();
-	unsigned int quantity = 1460;
-	unsigned char *buffer1_ptr;
-
-	buffer1_ptr = (unsigned char *)0xF200;
-	int i;
-	for(i=0 ; i < quantity ; i++){
-		*buffer1_ptr = 'A';
-		buffer1_ptr +=1;
-	}
-	buffer1_ptr = (unsigned char *)0xF200;
+//	unsigned int quantity = 1460;
+//	unsigned char *buffer1_ptr;
+//
+//	buffer1_ptr = (unsigned char *)0xF200;
+//	int i;
+//	for(i=0 ; i < quantity ; i++){
+//		*buffer1_ptr = 'A';
+//		buffer1_ptr +=1;
+//	}
+//	buffer1_ptr = (unsigned char *)0xF200;
 
     // Check whether the server functionality is successfully initialized
     if(currentCC3000State() & CC3000_SERVER_INIT)
@@ -142,6 +142,8 @@ void waitForConnection(void)
                 shutdownServer();
                 initServer();
             }
+
+            if(bytesRecvd < 0){check_socket_connection();}
             hci_unsolicited_event_handler();
         }
     }
@@ -184,6 +186,8 @@ char incomingPacketManager(void){
 		break;
 
 	}
+
+//	if (bytesRecvd)
 
 	return requestBuffer[0];
 
