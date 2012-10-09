@@ -1,10 +1,7 @@
-
-
 #include "cc3000.h"
 #include "msp430fr5739.h"
 #include "wlan.h" 
 #include "evnt_handler.h"    // callback function declaration
-//#include "nvmem.h"
 #include "socket.h"
 #include "common.h"
 #include "netapp.h"
@@ -12,15 +9,13 @@
 #include "common.h"
 #include "string.h"
 #include "demo_config.h"
-//#include "uart.h"
 #include "sensors.h"
 #include "board.h"
-//#include "terminal.h"
 #include "strlib.h"
 #include "server.h"
 #include "carsons_file.h"
 
-
+//Old Variable Decleration
 long serverSocket;
 sockaddr serverSocketAddr;
 sockaddr clientaddr;
@@ -30,77 +25,62 @@ volatile int bytesRecvd = 0;
 int curSocket = 0;
 int bytesSent = 0;
 int optval, optlen;
-
-
+//*****************************************************************************************************************************
+//*****************************************************************************************************************************
+//*****************************************************************************************************************************
 //New Variable Declaration
-
-
-
-
 enum Msg_Type
 {
-    Config     		= 0x41,
-    Start     		= 0x42,
-    Stop      		= 0x43,
-    Continue    	= 0x44,
-    Meas_Data 		= 0x45,
-    Setup_Complete	= 0x46
+    Config     		= 0x46, //F = conFigeration
+    Start     		= 0x53,	//S = Start
+    Stop      		= 0x50,	//P stoP
+    Continue    	= 0x43, //C Continue
+    Meas_Data 		= 0x4D, //Measured
+    Setup_Complete	= 0x44  //setup Done
 };
+char generalConfirmationPacket[] = { Setup_Complete, 'A','A', 'A','A','A','A'};		//Generalised format for a send message.
 
-char incomingPacketData1; 						   							//Data from incoming config message. Will be used to setup the adc.
-char incomingPacketData2;													//Data from incoming config message. Will be used to setup the adc.
-char generalConfirmationPacket[] = { Setup_Complete, 'A','A', 'A','A'};		//Generalised format for a send message.
-char deviceconfigured = FALSE;												//By default the device is not configured. Checked by the incoming message.
-char DMA0_State = NOT_DONE;													// State of DMA register process
+char incomingPacketData1; 					//Data from incoming config message. Will be used to setup the adc.
+char incomingPacketData2;					//Data from incoming config message. Will be used to setup the adc.
+
+char deviceconfigured = FALSE;				//By default the device is not configured. Checked by the incoming message.
+char DMA0_State = NOT_DONE;					// State of DMA register process
 char DMA1_State = NOT_DONE;
 char ADC_STATE = HALTED;
 char DMA_STATE = HALTED;
 
-unsigned int ammount_of_samples_in_packet = 1400;							//Should be put in a config header for the device.
-unsigned int ammount_packets_to_be_sent = 1500;								//Should be put in a config header for the device.
-#define SENDING_PACKETS 0x5DC
-#define BUFFER0_STR_ADD (0xF400);											//Allocated in the linker command file.
-#define BUFFER1_STR_ADD (0xFA00);											//Allocated in the linker command file.
+unsigned long ammount_of_samples_in_packet = 1455;	//Should be put in a config header for the device.
+unsigned long ammount_packets_to_be_sent = 1500;		//Should be put in a config header for the device.
+unsigned char temp_word_holder[2];
+unsigned char *temp_ptr;
+#define BUFFER0_STR_ADD 0xF382;				//Allocated in the linker command file.
+#define BUFFER1_STR_ADD 0xF982;				//Allocated in the linker command file.
 
-//sendingBuffer_ptr = buffer0_ptr;											//Just the start Default.
-int i;																		//Used in "for" loop.
-unsigned int count;
+int i;										//Used in "for" loop.
+unsigned long missed_samples =0;
 
-void really_long_time (void);
-
-//#ifdef __CCS__
-//#pragma DATA_SECTION(buffer0_Array, ".fram_adc_buf0")
-//char buffer0_Array[SENDING_PACKETS];
-//
-//#pragma DATA_SECTION(buffer1_Array, ".fram_adc_buf1")
-//char buffer1_Array[SENDING_PACKETS];
-//
-//#endif
 unsigned char *buffer0_ptr;
 unsigned char *buffer1_ptr;
 unsigned char *sendingBuffer_ptr;
+char packet_header_size = 5; 				//<Command 1 Byte><Size of data 2 bytes><Missed Data 2 bytes>
+unsigned char *confirmationPacket_ptr;   	// Packet sent to confirm a recieved message.
 
 
-/** \brief Definition of data packet to be sent by server */
 // Packet Structure: <Command 1 Byte><Size of data 2 bytes><Missed Data 2 bytes><Data of whatever size>
 unsigned char dataPacket[] = { 0x01,   0x05,0x00,    0x00,0x00,    0x01,0x02,0x03,0x04,0x05};
 char serverErrorCode = 0;
-
+//*****************************************************************************************************************************
+//*****************************************************************************************************************************
+//*****************************************************************************************************************************
 void waitForConnection(void)
 {
 	setup_parrelel_sampling();
-	buffer0_ptr = (unsigned char *)BUFFER0_STR_ADD;
-	buffer1_ptr = (unsigned char *)BUFFER1_STR_ADD;
-	sendingBuffer_ptr = buffer0_ptr;											//Just the start Default.
+	setup_data_packet_header();
 
-
-    // Check whether the server functionality is successfully initialized
-    if(currentCC3000State() & CC3000_SERVER_INIT)
+    if(currentCC3000State() & CC3000_SERVER_INIT) 	// Check whether the server functionality is successfully initialized
     {
-        // Begin waiting for client and handle the connection
-        while(1)
+        while(1) 									// Begin waiting for client and handle the connection
         {
-
             hci_unsolicited_event_handler();
             addrlen = sizeof(clientaddr);
             
@@ -109,16 +89,17 @@ void waitForConnection(void)
 			{
 				clientDescriptor = accept(serverSocket, (sockaddr *) &clientaddr, &addrlen);
 			}
-
             hci_unsolicited_event_handler();
-            
 
-
-            if(clientDescriptor >= 0)// Connection Accepted, Wait for data exchange
+            if(clientDescriptor >= 0)				// Connection Accepted, Wait for data exchange
             {
                 setCC3000MachineState(CC3000_CLIENT_CONNECTED);
                 unsolicicted_events_timer_disable();
+                //**********************
+                // Important Function. Manages incoming Message aswell as initiating outgoing message.
                 incomingPacketManager();
+                //**********************
+
 
 			}
             else if(clientDescriptor == SOCKET_INACTIVE_ERR)
@@ -129,7 +110,7 @@ void waitForConnection(void)
                 shutdownServer();
                 initServer();
             }
-            if(bytesRecvd < 0){check_socket_connection();}
+            if(bytesRecvd < 0){check_socket_connection();} //If the recieve function goes inactive, shuts down. This checks for that case
             hci_unsolicited_event_handler();
         }
     }
@@ -153,26 +134,35 @@ char incomingPacketManager(void){
 	case Config:
 		incomingPacketData1 = requestBuffer[5];
 		incomingPacketData2 = requestBuffer[6];
+		generalConfirmationPacket[1] = 0;					//First Byte of Data Size
+		generalConfirmationPacket[2] = 2;					//Second Byte of Data Size
+		generalConfirmationPacket[3] = 0;					//First Byte of Data lost
+		generalConfirmationPacket[4] = 0;					//Second Byte of Data Size
+		confirmationPacket_ptr =  &ammount_packets_to_be_sent;
+		generalConfirmationPacket[6] = *confirmationPacket_ptr;
+		confirmationPacket_ptr++;
+		generalConfirmationPacket[5] = *confirmationPacket_ptr;
+
 		bytesSent = send(clientDescriptor, (unsigned char *)generalConfirmationPacket, sizeof(generalConfirmationPacket), 0);
 		turnLedOff(CC3000_SENDING_DATA_IND);
 		toggleLed(CC3000_SENDING_DATA_IND);
 		__delay_cycles(100000);
 		toggleLed(CC3000_SENDING_DATA_IND);
-		if (bytesSent != sizeof(generalConfirmationPacket))
-		{	// Check if socket is still available
-			check_socket_connection();
-		}
+		if (bytesSent != sizeof(generalConfirmationPacket)){check_socket_connection();}
 		deviceconfigured = FALSE;
+
 		break;
+
 	case Start:
 		if(deviceconfigured == FALSE){
-			deviceconfigured = TRUE; //This is where I would configure the device to operate differently
+			deviceconfigured = TRUE; //This is where I would configure the device to operate differently.
+			// Consider setting up the ADC here, and creating a function that does this.
 		}
 
 		if(DMA_STATE == HALTED){							//VIMP: The stop state must stop the DMA
 			DMA0CTL += DMAEN;
 			DMA_STATE = RUNNING;
-			__delay_cycles(100000);
+			__delay_cycles(1000);
 		}
 
 		if(ADC_STATE == HALTED){
@@ -181,22 +171,37 @@ char incomingPacketManager(void){
 			__delay_cycles(100000);
 		}
 
+
 		for(i=0; i<ammount_packets_to_be_sent; i++){
 
-			while(DMA0_State == NOT_DONE && DMA1_State == NOT_DONE);
-			if(DMA0_State == DONE || DMA1_State == DONE){
+			if(DMA0_State == DONE || DMA1_State == DONE){	// VIMP: This may be a redundant check.
+				// One of them will be done, because the buffers are waiting to be sent.
+				//Safer to keep this here.
+
+
 				if(sendingBuffer_ptr == buffer0_ptr){		//Buffer0 is fill or done
 					DMA0_State = NOT_DONE;					// Reset for next usage
 					DMA1CTL += DMAEN;						// Start or enable DMA1 buffer filling process
 				}
-				else{
+				else{										//Buffer1 is fill or done
 					DMA1_State = NOT_DONE;					// Reset for next usage
 					DMA0CTL += DMAEN;						// Start or enable DMA0 buffer filling process
 				}
+				//*********************************************************************************************
+				//This is a pointer manipulation method to include the missed ADC cycles into the packet header.
+				sendingBuffer_ptr +=4;
+				temp_ptr = &missed_samples;
+				*sendingBuffer_ptr = *temp_ptr;
+				temp_ptr++;
+				sendingBuffer_ptr--;
+				*sendingBuffer_ptr = *temp_ptr;
+				sendingBuffer_ptr -=3;
+				missed_samples = 0;
+				//*********************************************************************************************
 				if(currentCC3000State() & CC3000_CLIENT_CONNECTED){
-					bytesSent = send(clientDescriptor, sendingBuffer_ptr, ammount_of_samples_in_packet, 0);
+					bytesSent = send(clientDescriptor, sendingBuffer_ptr, ammount_of_samples_in_packet+packet_header_size, 0);
 					toggleLed(CC3000_SENDING_DATA_IND);
-					if (bytesSent != ammount_of_samples_in_packet){	check_socket_connection();}
+					if (bytesSent != ammount_of_samples_in_packet+packet_header_size){	check_socket_connection();}
 		    	}
 			}
 		}
@@ -208,87 +213,52 @@ char incomingPacketManager(void){
 
 	}
 
-//	if (bytesRecvd)
 
 	return requestBuffer[0];
 
 }
-//****************************************************************************************************************************************
-// This sets up the ports for use.  Must still start the ADC  and DMA's. Remember to turn these off when you are done! DMA is not enabled.
-//****************************************************************************************************************************************
-void setup_parrelel_sampling (void){
-//****************************************************************************************************************************************
-	//Setup  accelerometer
-    // ~20KHz sampling
-    //Configure GPIO
-    // P3.0,P3.1 and P3.2 are accelerometer inputs
-    P3OUT &= ~(BIT0);
-    P3DIR &= ~(BIT0);
-    P3REN |= BIT0;
-
-    ACC_PORT_SEL0 |= ACC_X_PIN ;    //Enable A/D channel inputs
-    ACC_PORT_SEL1 |= ACC_X_PIN ;
-    ACC_PORT_DIR &= ~(ACC_X_PIN );
-    ACC_PWR_PORT_DIR |= ACC_PWR_PIN;              //Enable ACC_POWER
-    ACC_PWR_PORT_OUT |= ACC_PWR_PIN;
-
-    // Allow the accelerometer to settle before sampling any data
-    __delay_cycles(200000);
-//****************************************************************************************************************************************
-	  //Config the ADC
-	  // Configure ADC10;
-	  ADC10CTL0 = ADC10SHT_3 + ADC10MSC + ADC10ON;                    					//32 Clock Cycles in sample, Continous Saample, Adc On
-	  ADC10CTL1 = ADC10SHP + ADC10CONSEQ_2 + ADC10SSEL_2 + ADC10DIV_0;               	//Repeat Single Channel, Sm Clock, Divide clock by 2
-	                                            // Sampling timer, rpt single ch
-	//  ADC10CTL2 = ADC10RES;                     // 10-bit resolution
-	  ADC10CTL2 &= ~ADC10RES;
-	  ADC10MCTL0 = ADC10INCH_12 + ADC10SREF_1;  // Vref+, A12
-
-//****************************************************************************************************************************************
-	 // Configure internal reference
-	  while(REFCTL0 & REFGENBUSY);              // If ref generator busy, WAIT
-	  REFCTL0 |= REFVSEL_3+REFON;               // Select internal ref = 2.5V
-	                                            // Internal Reference ON
-	  __delay_cycles(75);                       // Delay (~75us) for Ref to settle
-//****************************************************************************************************************************************
-	  // Configure DMA0
-	   DMACTL0 = DMA0TSEL__ADC10IFG + DMA1TSEL__ADC10IFG;            // ADC10IFG trigger
-	  __data16_write_addr((unsigned short) &DMA0SA,(unsigned long) &ADC10MEM0);
-	                                            // Source single address
-	  __data16_write_addr((unsigned short) &DMA0DA,(unsigned long) 0xF400);
-	                                            // Destination array address
-	  DMA0SZ = ammount_of_samples_in_packet;                            // 32 conversions
-	  DMA0CTL = DMADT_0 + DMADSTINCR_3 + DMAIE + DMALEVEL + DMASRCBYTE + DMADSTBYTE; // + DMAEN
-	                                            // Rpt, inc dest, word access,
-	                                            // enable int after 32 conversions
-//****************************************************************************************************************************************
-	  // Configure DMA1
-//	   DMACTL0 += DMA1TSEL__ADC10IFG;            // ADC10IFG trigger: Note that the register is the same. Sets both Interrupts
-	  __data16_write_addr((unsigned short) &DMA1SA,(unsigned long) &ADC10MEM0);
-	                                            // Source single address
-	  __data16_write_addr((unsigned short) &DMA1DA,(unsigned long) 0xFA00);
-	                                            // Destination array address
-	  DMA1SZ = ammount_of_samples_in_packet;                            // 32 conversions
-	  DMA1CTL = DMADT_0 + DMADSTINCR_3 + DMAIE + DMALEVEL + DMASRCBYTE + DMADSTBYTE; // + DMAEN
-	                                            // Rpt, inc dest, word access,
-	                                            // enable int after 32 conversions
+void do_nothing(void){}
 
 
+//****************************************************************************************************************************************
+// This does the basic configeration of the Packet Headers.
+//****************************************************************************************************************************************
 
+void setup_data_packet_header (void){
+
+	buffer0_ptr 		= (unsigned char *)BUFFER0_STR_ADD;
+	buffer1_ptr 		= (unsigned char *)BUFFER1_STR_ADD;
+	sendingBuffer_ptr 	= (unsigned char *)BUFFER0_STR_ADD;
+
+	*buffer0_ptr = Meas_Data;
+	buffer0_ptr +=2;
+	temp_ptr = &ammount_of_samples_in_packet;
+	*buffer0_ptr = *temp_ptr;
+	temp_ptr++;
+	buffer0_ptr--;
+	*buffer0_ptr = *temp_ptr;
+	buffer0_ptr -=1;
+
+	*buffer1_ptr = Meas_Data;
+	buffer1_ptr +=2;
+	temp_ptr = &ammount_of_samples_in_packet;
+	*buffer1_ptr = *temp_ptr;
+	temp_ptr++;
+	buffer1_ptr--;
+	*buffer1_ptr = *temp_ptr;
+	buffer1_ptr -=1;
+
+
+	buffer0_ptr = (unsigned char *)BUFFER0_STR_ADD;
+	buffer1_ptr = (unsigned char *)BUFFER1_STR_ADD;
 }
 
-//****************************************************************************************************************************************
-//Start DMA and ADC
-//****************************************************************************************************************************************
-
-void startDMAandADC (void){
-	DMA0CTL += DMAEN;
-	ADC10CTL0 |= ADC10ENC + ADC10SC;        // Start sampling
-
-}
 
 //****************************************************************************************************************************************
 //Check Socket Connection
+//
+// This function is used throughout the main loop of the code (WaitforConnection). It checks the socket connection, and then changes
+// the state of the clientDescriptor. The clientDescriptor state is responsible for initiating a socket connection.
 //****************************************************************************************************************************************
 void check_socket_connection(void){
 	curSocket =  getsockopt(clientDescriptor, SOL_SOCKET, SOCK_DGRAM , &optval, (socklen_t*)&optlen);
@@ -299,29 +269,6 @@ void check_socket_connection(void){
 		unsetCC3000MachineState(CC3000_CLIENT_CONNECTED);
 	}
 }
-//****************************************************************************************************************************************
-//DMA Interupt Handler
-//****************************************************************************************************************************************
-
-#pragma vector=DMA_VECTOR
-__interrupt void DMA0_ISR (void)
-{
-  switch(__even_in_range(DMAIV,16))
-  {
-    case  0: break;                          	// No interrupt
-    case  2:
-    	DMA0_State = DONE;
-    	sendingBuffer_ptr = buffer0_ptr;
-      break;                                 	// DMA0IFG
-    case  4:
-    	DMA1_State = DONE;
-    	sendingBuffer_ptr = buffer1_ptr;
-    	break;                          		// DMA1IFG
-    case  6: break;                          	// DMA2IFG
-    default: break;
-  }
-}
-
 
 
 //*****************************************************************************
@@ -380,12 +327,7 @@ void initServer(void)
     setCC3000MachineState(CC3000_SERVER_INIT);
 
     itoa(port, portStr, DECIMAL_BASE);
-
-
 }
-
-
-
 
 //*****************************************************************************
 //
@@ -436,155 +378,102 @@ void serverError(char err)
 }
 
 
+//****************************************************************************************************************************************
+// This sets up the ports for use.  Must still start the ADC  and DMA's. Remember to turn these off when you are done! DMA is not enabled.
+//****************************************************************************************************************************************
+void setup_parrelel_sampling (void){
+//****************************************************************************************************************************************
+	//Setup the Accelerometer:
+    P3OUT &= ~(BIT0); 													// P3.0,P3.1 and P3.2 are accelerometer inputs
+    P3DIR &= ~(BIT0);
+    P3REN |= BIT0;
 
-void really_long_time (void){
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);                   // Delay between sequence convs
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
-    __delay_cycles(25000);
+    ACC_PORT_SEL0 		|= ACC_X_PIN ;    								//Enable A/D channel inputs
+    ACC_PORT_SEL1 		|= ACC_X_PIN ;
+    ACC_PORT_DIR 		&= ~(ACC_X_PIN );
+    ACC_PWR_PORT_DIR 	|= ACC_PWR_PIN;   								//Enable ACC_POWER
+    ACC_PWR_PORT_OUT 	|= ACC_PWR_PIN;
 
+
+    __delay_cycles(200000); 											// Allow the accelerometer to settle before sampling any data
+//****************************************************************************************************************************************
+    //Config the ADC
+    ADC10CTL0 = ADC10SHT_3 + ADC10MSC + ADC10ON;               			//32 Clock Cycles in sample, Continous Saample, Adc On
+    ADC10CTL1 = ADC10SHP + ADC10CONSEQ_2 + ADC10SSEL_2 + ADC10DIV_0;  	//Repeat Single Channel, Sm Clock, Divide clock by 1
+    ADC10CTL2 &= ~ADC10RES;												//8 bit resolution
+    ADC10MCTL0 = ADC10INCH_12 + ADC10SREF_1;  							// Vref+, Channel A12
+    //VIMP!!! I am going to turn on an interrupt for when a value is not collected!
+	ADC10IE |= ADC10OVIE;					// Turn ADC interrupt on. This will catch the missed samples.
+
+
+//****************************************************************************************************************************************
+    // Configure internal reference
+	while(REFCTL0 & REFGENBUSY);              							// If ref generator busy, WAIT
+	REFCTL0 |= REFVSEL_3+REFON;               							// Select internal ref = 2.5V
+	                                            						// Internal Reference ON
+	__delay_cycles(75);                       							// Delay (~75us) for Ref to settle
+//****************************************************************************************************************************************
+	  // Configure DMA0
+	   DMACTL0 = DMA0TSEL__ADC10IFG + DMA1TSEL__ADC10IFG;            	// ADC10IFG trigger - Set for both DMA Channels
+	  __data16_write_addr((unsigned short) &DMA0SA,(unsigned long) &ADC10MEM0); 		// Source single address
+	  __data16_write_addr((unsigned short) &DMA0DA,(unsigned long) (buffer0_ptr + packet_header_size));	// Destination array address
+	  DMA0SZ = ammount_of_samples_in_packet;                            // Sets the ammount of transfers to be completed - Set above.
+	  DMA0CTL = DMADT_0 + DMADSTINCR_3 + DMAIE + DMALEVEL + DMASRCBYTE + DMADSTBYTE;
+	  // Single transfer process with DM0SZ itterations, inc dest, byte access in both registers,
+
+//****************************************************************************************************************************************
+	  // Configure DMA1
+	  __data16_write_addr((unsigned short) &DMA1SA,(unsigned long) &ADC10MEM0);			// Source single address
+	  __data16_write_addr((unsigned short) &DMA1DA,(unsigned long) (buffer1_ptr + packet_header_size));	// Destination array address
+	  DMA1SZ = ammount_of_samples_in_packet;                            // Sets the ammount of transfers to be completed - Set above.
+	  DMA1CTL = DMADT_0 + DMADSTINCR_3 + DMAIE + DMALEVEL + DMASRCBYTE + DMADSTBYTE;
+	  // Single transfer process with DM1SZ itterations, inc dest, byte access in both registers,
 }
-//                    P3OUT &= ~(BIT4 + BIT5 + BIT6 + BIT7);
-//
-//                    P3DIR |= (BIT4 + BIT5 + BIT6 + BIT7);
-//                	P3OUT ^= 0xF0;
-//                	DMA0CTL += DMAEN;
-//                //	P3OUT ^= 0x40;
-//                	really_long_time ();
-//                	really_long_time ();
-//                	really_long_time ();
-//                	really_long_time ();
-//                	really_long_time ();
-//                	really_long_time ();
-//                	really_long_time ();
-//                	really_long_time ();
-//                	really_long_time ();
-//                	P3OUT ^= 0xF0;
-//
-//                	ADC10CTL0 |= ADC10ENC + ADC10SC;        // Start sampling
-////                	__bis_SR_register( GIE);        // LPM0, ADC10_ISR will force exit
-//                  while(1)
-//                  {
-//                    while (ADC10CTL1 & BUSY);               // Wait if ADC10 core is active
-//                //    ADC10CTL0 |= ADC10ENC + ADC10SC;        // Start sampling
-//
-//                    __no_operation();
-//                    // << SET BREAKPOINT HERE
-//                	P3OUT ^= 0x40;
 
-//	  //****************************************************************************************************************************************
-//	  // Configure DMA (ADC10IFG trigger)
-//
-//	   DMACTL0 = DMA0TSEL__ADC10IFG;            // ADC10IFG trigger
-//	  __data16_write_addr((unsigned short) &DMA0SA,(unsigned long) &ADC10MEM0);
-//	                                            // Source single address
-//	  __data16_write_addr((unsigned short) &DMA0DA,(unsigned long) &buffer0_Array);
-//	                                            // Destination array address
-//	  DMA0SZ = 0x578;                            // Number of conversions is 1400
-//	  DMA0CTL = DMADT_0 + DMADSTINCR_3 + DMAIE + DMALEVEL;
-//	                                            // Rpt, inc dest, word access,
-//	                                            // enable int after 32 conversions
-//
-//	  // Configure DMA (ADC10IFG trigger)
-//
-//	   DMACTL0 += DMA1TSEL__ADC10IFG;            // ADC10IFG trigger
-//	  __data16_write_addr((unsigned short) &DMA1SA,(unsigned long) &ADC10MEM0);
-//	                                            // Source single address
-//	  __data16_write_addr((unsigned short) &DMA1DA,(unsigned long) &buffer1_Array);
-////	  DMA1DA = (__SFR_FARPTR) (unsigned long) 0xF500;
-//	                                            // Destination array address
-//	  DMA1SZ = 0x578;                            // Number of conversions is 1400
-//	  DMA1CTL = DMADT_0 + DMADSTINCR_3 + DMAIE + DMALEVEL;
+//****************************************************************************************************************************************
+//DMA Interrupt Handler
+// This needs to deal with both the interrupts. When a DMA channel is done, it changes its state, and assigns itself as the next
+// buffer to be sent.
+//****************************************************************************************************************************************
 
+#pragma vector=DMA_VECTOR
+__interrupt void DMA0_ISR (void)
+{
+  switch(__even_in_range(DMAIV,16))
+  {
+    case  0: break;                          	// No interrupt
+    case  2:
+    	DMA0_State = DONE;
+    	sendingBuffer_ptr = (unsigned char *)BUFFER0_STR_ADD;
+
+      break;                                 	// DMA0IFG
+    case  4:
+    	DMA1_State = DONE;
+    	sendingBuffer_ptr = (unsigned char *)BUFFER1_STR_ADD;
+
+    	break;                          		// DMA1IFG
+    case  6: break;                          	// DMA2IFG
+    default: break;
+  }
+}
+//*****************************************************************************************************************************
+// ADC Interrupt handler. I am basically only going to use this interrupt to count the number of times that the ADC cycle
+// is missed.
+//*****************************************************************************************************************************
+#pragma vector=ADC10_VECTOR
+__interrupt void ADC10_ISR(void)
+{
+  switch(__even_in_range(ADC10IV,12))
+  {
+    case  0: break;                          // No interrupt
+    case  2:
+    	missed_samples++;
+    	break;                          // conversion result overflow
+    case  4: break;                          // conversion time overflow
+    case  6: break;                          // ADC10HI
+    case  8: break;                          // ADC10LO
+    case 10: break;                          // ADC10IN
+    case 12: break;                          // Clear CPUOFF bit from 0(SR)
+    default: break;
+  }
+}

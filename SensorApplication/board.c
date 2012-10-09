@@ -235,8 +235,8 @@ void initClk(void)
   // SMCLCK which will source also SPI will be sourced also by DCO
     // 
     CSCTL0_H = 0xA5;
-    CSCTL1 |= DCORSEL + DCOFSEL0 + DCOFSEL1;	 // Set max. DCO setting
-    CSCTL2 = SELA_1 + SELS_3 + SELM_3;		// set ACLK - VLO, the rest  = MCLK = DCO
+    CSCTL1 |= DCORSEL + DCOFSEL0 + DCOFSEL1;	 // Set max. DCO setting sets Mclk to 24 Mhz
+    CSCTL2 = SELA_1 + SELS_3 + SELM_3;		// set ACLK = VLO, the rest  = MCLK = DCO
     //Aux Clk set to VLO Clk
     //SM Clock and Main Clock set to DCO Clk
     CSCTL3 = DIVA_0 + DIVS_0 + DIVM_0;		// set all dividers to 0
@@ -558,7 +558,7 @@ void restartMSP430()
 //Catch interrupt vectors that are not initialized.
 
 #ifdef __CCS__
-#pragma vector=PORT1_VECTOR, WDT_VECTOR, TIMER1_A1_VECTOR, TIMER0_A1_VECTOR, TIMER0_A0_VECTOR, ADC10_VECTOR, UNMI_VECTOR,COMP_D_VECTOR, PORT3_VECTOR, RTC_VECTOR, TIMER0_B1_VECTOR, TIMER1_B0_VECTOR, TIMER1_B1_VECTOR, TIMER2_B0_VECTOR, TIMER2_B1_VECTOR,SYSNMI_VECTOR, USCI_A1_VECTOR, USCI_B0_VECTOR
+#pragma vector=PORT1_VECTOR, WDT_VECTOR, TIMER1_A1_VECTOR, TIMER0_A1_VECTOR, TIMER0_A0_VECTOR, UNMI_VECTOR,COMP_D_VECTOR, PORT3_VECTOR, RTC_VECTOR, TIMER0_B1_VECTOR, TIMER1_B0_VECTOR, TIMER1_B1_VECTOR, TIMER2_B0_VECTOR, TIMER2_B1_VECTOR,SYSNMI_VECTOR, USCI_A1_VECTOR, USCI_B0_VECTOR
 __interrupt void Trap_ISR(void)
 {
   while(1);
