@@ -51,7 +51,6 @@
 
 void main(void)
 {
-
     WDTCTL = WDTPW + WDTHOLD;				// Stop WDT
     resetCC3000StateMachine();				// Start CC3000 State Machine
     initDriver();							// Initialize Board and CC3000

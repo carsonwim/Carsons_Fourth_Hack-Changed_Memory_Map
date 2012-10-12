@@ -33,10 +33,10 @@ enum Msg_Type
 {
     Config     		= 0x46, //F = conFigeration
     Start     		= 0x53,	//S = Start
-    Stop      		= 0x50,	//P stoP
-    Continue    	= 0x43, //C Continue
-    Meas_Data 		= 0x4D, //Measured
-    Setup_Complete	= 0x44  //setup Done
+    Stop      		= 0x50,	//P = stoP
+    Continue    	= 0x43, //C = Continue
+    Meas_Data 		= 0x4D, //M = Measured
+    Setup_Complete	= 0x44  //D = setup Done
 };
 char generalConfirmationPacket[] = { Setup_Complete, 'A','A', 'A','A','A','A'};		//Generalised format for a send message.
 
@@ -59,6 +59,9 @@ unsigned char *temp_ptr;
 int i;										//Used in "for" loop.
 unsigned long missed_samples =0;
 
+char *fake_buffer_ptr;
+char fake_value;
+
 unsigned char *buffer0_ptr;
 unsigned char *buffer1_ptr;
 unsigned char *sendingBuffer_ptr;
@@ -74,6 +77,7 @@ char serverErrorCode = 0;
 //*****************************************************************************************************************************
 void waitForConnection(void)
 {
+
 	setup_parrelel_sampling();
 	setup_data_packet_header();
 
@@ -177,8 +181,6 @@ char incomingPacketManager(void){
 			if(DMA0_State == DONE || DMA1_State == DONE){	// VIMP: This may be a redundant check.
 				// One of them will be done, because the buffers are waiting to be sent.
 				//Safer to keep this here.
-
-
 				if(sendingBuffer_ptr == buffer0_ptr){		//Buffer0 is fill or done
 					DMA0_State = NOT_DONE;					// Reset for next usage
 					DMA1CTL += DMAEN;						// Start or enable DMA1 buffer filling process
@@ -201,7 +203,10 @@ char incomingPacketManager(void){
 				if(currentCC3000State() & CC3000_CLIENT_CONNECTED){
 					bytesSent = send(clientDescriptor, sendingBuffer_ptr, ammount_of_samples_in_packet+packet_header_size, 0);
 					toggleLed(CC3000_SENDING_DATA_IND);
-					if (bytesSent != ammount_of_samples_in_packet+packet_header_size){	check_socket_connection();}
+					if (bytesSent != ammount_of_samples_in_packet+packet_header_size){
+						check_socket_connection();
+						check_socket_connection();
+					}
 		    	}
 			}
 		}
@@ -209,6 +214,8 @@ char incomingPacketManager(void){
 	case Stop:
 		break;
 	case Continue:
+		break;
+	default:
 		break;
 
 	}
@@ -384,24 +391,33 @@ void serverError(char err)
 void setup_parrelel_sampling (void){
 //****************************************************************************************************************************************
 	//Setup the Accelerometer:
-    P3OUT &= ~(BIT0); 													// P3.0,P3.1 and P3.2 are accelerometer inputs
-    P3DIR &= ~(BIT0);
-    P3REN |= BIT0;
+//    P3OUT &= ~(BIT0 + BIT3); 													// P3.0,P3.1 and P3.2 are accelerometer inputs
+//    P3DIR &= ~(BIT0 + BIT3);
+//    P3REN |= BIT0 + BIT3;
+//
+//    ACC_PORT_SEL0 		|= ACC_X_PIN ;    								//Enable A/D channel inputs
+//    ACC_PORT_SEL1 		|= ACC_X_PIN ;
+//    ACC_PORT_DIR 		&= ~(ACC_X_PIN );
+//    ACC_PWR_PORT_DIR 	|= ACC_PWR_PIN;   								//Enable ACC_POWER
+//    ACC_PWR_PORT_OUT 	|= ACC_PWR_PIN;
 
-    ACC_PORT_SEL0 		|= ACC_X_PIN ;    								//Enable A/D channel inputs
-    ACC_PORT_SEL1 		|= ACC_X_PIN ;
-    ACC_PORT_DIR 		&= ~(ACC_X_PIN );
-    ACC_PWR_PORT_DIR 	|= ACC_PWR_PIN;   								//Enable ACC_POWER
-    ACC_PWR_PORT_OUT 	|= ACC_PWR_PIN;
+    P3OUT 	&= ~BIT3;
+	P3DIR 	&= ~BIT3;
+	P3REN 	|=  BIT3;
+    P3SEL0 	|=  BIT3;
+    P3SEL1	|=  BIT3;
+
 
 
     __delay_cycles(200000); 											// Allow the accelerometer to settle before sampling any data
 //****************************************************************************************************************************************
     //Config the ADC
-    ADC10CTL0 = ADC10SHT_3 + ADC10MSC + ADC10ON;               			//32 Clock Cycles in sample, Continous Saample, Adc On
-    ADC10CTL1 = ADC10SHP + ADC10CONSEQ_2 + ADC10SSEL_2 + ADC10DIV_0;  	//Repeat Single Channel, Sm Clock, Divide clock by 1
+    ADC10CTL0 = ADC10SHT_2 + ADC10MSC + ADC10ON;               			//32 Clock Cycles in sample, Continous Saample, Adc On
+    ADC10CTL1 = ADC10SHP + ADC10CONSEQ_2 + ADC10SSEL_0 + ADC10DIV_0;  	//Repeat Single Channel, Sm Clock, Divide clock by 1
     ADC10CTL2 &= ~ADC10RES;												//8 bit resolution
-    ADC10MCTL0 = ADC10INCH_12 + ADC10SREF_1;  							// Vref+, Channel A12
+//    ADC10CTL2 |= ADC10RES;
+//    ADC10MCTL0 = ADC10INCH_12 + ADC10SREF_1;  							// Vref+, Channel A12
+    ADC10MCTL0 = ADC10INCH_15 + ADC10SREF_0;  							// Source Reference, Channel A15
     //VIMP!!! I am going to turn on an interrupt for when a value is not collected!
 	ADC10IE |= ADC10OVIE;					// Turn ADC interrupt on. This will catch the missed samples.
 
@@ -409,7 +425,7 @@ void setup_parrelel_sampling (void){
 //****************************************************************************************************************************************
     // Configure internal reference
 	while(REFCTL0 & REFGENBUSY);              							// If ref generator busy, WAIT
-	REFCTL0 |= REFVSEL_3+REFON;               							// Select internal ref = 2.5V
+	REFCTL0 |= REFVSEL_3+REFON;               							// Select internal \ref = 2.5V
 	                                            						// Internal Reference ON
 	__delay_cycles(75);                       							// Delay (~75us) for Ref to settle
 //****************************************************************************************************************************************
