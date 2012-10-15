@@ -14,6 +14,8 @@
 #include "strlib.h"
 #include "server.h"
 #include "carsons_file.h"
+#include "server_setup.h"
+
 
 //Old Variable Decleration
 long serverSocket;
@@ -29,19 +31,12 @@ int optval, optlen;
 //*****************************************************************************************************************************
 //*****************************************************************************************************************************
 //New Variable Declaration
-enum Msg_Type
-{
-    Config     		= 0x46, //F = conFigeration
-    Start     		= 0x53,	//S = Start
-    Stop      		= 0x50,	//P = stoP
-    Continue    	= 0x43, //C = Continue
-    Meas_Data 		= 0x4D, //M = Measured
-    Setup_Complete	= 0x44  //D = setup Done
-};
+
 char generalConfirmationPacket[] = { Setup_Complete, 'A','A', 'A','A','A','A'};		//Generalised format for a send message.
 
 char incomingPacketData1; 					//Data from incoming config message. Will be used to setup the adc.
 char incomingPacketData2;					//Data from incoming config message. Will be used to setup the adc.
+unsigned long config_data = 0;
 
 char deviceconfigured = FALSE;				//By default the device is not configured. Checked by the incoming message.
 char DMA0_State = NOT_DONE;					// State of DMA register process
@@ -49,12 +44,11 @@ char DMA1_State = NOT_DONE;
 char ADC_STATE = HALTED;
 char DMA_STATE = HALTED;
 
-unsigned long ammount_of_samples_in_packet = 1455;	//Should be put in a config header for the device.
-unsigned long ammount_packets_to_be_sent = 1500;		//Should be put in a config header for the device.
+unsigned long ammount_of_samples_in_packet = (unsigned long)AMMOUNT_OF_SAMPLES_IN_PACKET;;	//Should be put in a config header for the device.
+unsigned long ammount_packets_to_be_sent = (unsigned long)AMMOUNT_PACKETS_TO_BE_SENT;		//Should be put in a config header for the device.
 unsigned char temp_word_holder[2];
 unsigned char *temp_ptr;
-#define BUFFER0_STR_ADD 0xF382;				//Allocated in the linker command file.
-#define BUFFER1_STR_ADD 0xF982;				//Allocated in the linker command file.
+
 
 int i;										//Used in "for" loop.
 unsigned long missed_samples =0;
@@ -78,8 +72,15 @@ char serverErrorCode = 0;
 void waitForConnection(void)
 {
 
-	setup_parrelel_sampling();
+//	setup_parrelel_sampling();
 	setup_data_packet_header();
+
+	//RESET ADC and DMA:
+	refresh_ADC();
+	ADC_STATE = HALTED;
+	//RESET DMA STATE.
+	refresh_DMA();
+	DMA_STATE = HALTED;
 
     if(currentCC3000State() & CC3000_SERVER_INIT) 	// Check whether the server functionality is successfully initialized
     {
@@ -136,8 +137,19 @@ char incomingPacketManager(void){
 	switch(requestBuffer[0])
 	{
 	case Config:
-		incomingPacketData1 = requestBuffer[5];
-		incomingPacketData2 = requestBuffer[6];
+		//RESET ADC and DMA:
+		refresh_ADC();
+		ADC_STATE = HALTED;
+		//RESET DMA STATE.
+		refresh_DMA();
+		DMA_STATE = HALTED;
+
+		//Extracts the required Data from config.
+		confirmationPacket_ptr = &config_data;
+		*confirmationPacket_ptr = requestBuffer[6];
+		confirmationPacket_ptr++;
+		*confirmationPacket_ptr = requestBuffer[5];
+
 		generalConfirmationPacket[1] = 0;					//First Byte of Data Size
 		generalConfirmationPacket[2] = 2;					//Second Byte of Data Size
 		generalConfirmationPacket[3] = 0;					//First Byte of Data lost
@@ -159,6 +171,7 @@ char incomingPacketManager(void){
 
 	case Start:
 		if(deviceconfigured == FALSE){
+			configure_channel(&config_data);
 			deviceconfigured = TRUE; //This is where I would configure the device to operate differently.
 			// Consider setting up the ADC here, and creating a function that does this.
 		}
@@ -205,13 +218,35 @@ char incomingPacketManager(void){
 					toggleLed(CC3000_SENDING_DATA_IND);
 					if (bytesSent != ammount_of_samples_in_packet+packet_header_size){
 						check_socket_connection();
-						check_socket_connection();
+
 					}
 		    	}
 			}
 		}
 		break;
 	case Stop:
+		//RESET ADC and DMA:
+		refresh_ADC();
+		ADC_STATE = HALTED;
+		//RESET DMA STATE.
+		refresh_DMA();
+		DMA_STATE = HALTED;
+
+
+		generalConfirmationPacket[1] = 0;					//First Byte of Data Size
+		generalConfirmationPacket[2] = 2;					//Second Byte of Data Size
+		generalConfirmationPacket[3] = 0;					//First Byte of Data lost
+		generalConfirmationPacket[4] = 0;					//Second Byte of Data Size
+		generalConfirmationPacket[5] = 0;
+		generalConfirmationPacket[6] = 0;
+
+		bytesSent = send(clientDescriptor, (unsigned char *)generalConfirmationPacket, sizeof(generalConfirmationPacket), 0);
+		turnLedOff(CC3000_SENDING_DATA_IND);
+		toggleLed(CC3000_SENDING_DATA_IND);
+		__delay_cycles(100000);
+		toggleLed(CC3000_SENDING_DATA_IND);
+		if (bytesSent != sizeof(generalConfirmationPacket)){check_socket_connection();}
+
 		break;
 	case Continue:
 		break;
@@ -274,6 +309,13 @@ void check_socket_connection(void){
 		closesocket(clientDescriptor);
 		clientDescriptor = -1;
 		unsetCC3000MachineState(CC3000_CLIENT_CONNECTED);
+
+		//RESET ADC and DMA:
+		refresh_ADC();
+		ADC_STATE = HALTED;
+		//RESET DMA STATE.
+		refresh_DMA();
+		DMA_STATE = HALTED;
 	}
 }
 
@@ -412,12 +454,11 @@ void setup_parrelel_sampling (void){
     __delay_cycles(200000); 											// Allow the accelerometer to settle before sampling any data
 //****************************************************************************************************************************************
     //Config the ADC
-    ADC10CTL0 = ADC10SHT_2 + ADC10MSC + ADC10ON;               			//32 Clock Cycles in sample, Continous Saample, Adc On
+    ADC10CTL0 = ADC10SHT_0 + ADC10MSC + ADC10ON;               			//32 Clock Cycles in sample, Continous Saample, Adc On
     ADC10CTL1 = ADC10SHP + ADC10CONSEQ_2 + ADC10SSEL_0 + ADC10DIV_0;  	//Repeat Single Channel, Sm Clock, Divide clock by 1
     ADC10CTL2 &= ~ADC10RES;												//8 bit resolution
-//    ADC10CTL2 |= ADC10RES;
 //    ADC10MCTL0 = ADC10INCH_12 + ADC10SREF_1;  							// Vref+, Channel A12
-    ADC10MCTL0 = ADC10INCH_15 + ADC10SREF_0;  							// Source Reference, Channel A15
+    ADC10MCTL0 = ADC10INCH_13 + ADC10SREF_0;  							// Source Reference, Channel A15
     //VIMP!!! I am going to turn on an interrupt for when a value is not collected!
 	ADC10IE |= ADC10OVIE;					// Turn ADC interrupt on. This will catch the missed samples.
 

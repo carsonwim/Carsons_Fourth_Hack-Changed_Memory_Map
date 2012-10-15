@@ -285,53 +285,53 @@ initDriver(void)
 {
 
 
-    
+
     pio_init(); // Init GPIO's
     init_spi();
     wlan_init( CC3000_UsynchCallback, sendWLFWPatch, sendDriverPatch, sendBootLoaderPatch, ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
     wlan_start(0);
-        
+
 #if IP_ALLOC_METHOD == USE_DHCP
-    
+
     // DHCP is used by default
-    
+
     // Subnet mask is assumed to be 255.255.255.0
 
     pucSubnetMask[0] = 0;
     pucSubnetMask[1] = 0;
     pucSubnetMask[2] = 0;
     pucSubnetMask[3] = 0;
-    
+
     // CC3000's IP
     pucIP_Addr[0] = 0;
     pucIP_Addr[1] = 0;
     pucIP_Addr[2] = 0;
     pucIP_Addr[3] = 0;
-    
+
     // Default Gateway/Router IP
     // 192.168.1.1
     pucIP_DefaultGWAddr[0] = 0;
     pucIP_DefaultGWAddr[1] = 0;
     pucIP_DefaultGWAddr[2] = 0;
     pucIP_DefaultGWAddr[3] = 0;
-    
+
     // We assume the router is also a DNS server
     pucDNS[0] = 0;
     pucDNS[1] = 0;
     pucDNS[2] = 0;
     pucDNS[3] = 0;
-    
+
     // Force DHCP
-    netapp_dhcp((unsigned long *)pucIP_Addr, (unsigned long *)pucSubnetMask, 
+    netapp_dhcp((unsigned long *)pucIP_Addr, (unsigned long *)pucSubnetMask,
                 (unsigned long *)pucIP_DefaultGWAddr, (unsigned long *)pucDNS);
-    
+
     //
     // reset the CC3000
-    // 
+    //
     wlan_stop();
-    __delay_cycles(6000000);            
+    __delay_cycles(6000000);
     wlan_start(0);
-    
+
 #elif IP_ALLOC_METHOD == USE_STATIC_IP
 
     // Subnet mask is assumed to be 255.255.255.0
@@ -340,20 +340,20 @@ initDriver(void)
     pucSubnetMask[1] = 0xFF;
     pucSubnetMask[2] = 0xFF;
     pucSubnetMask[3] = 0x0;
-    
+
     // CC3000's IP
     pucIP_Addr[0] = STATIC_IP_OCT1;
     pucIP_Addr[1] = STATIC_IP_OCT2;
     pucIP_Addr[2] = STATIC_IP_OCT3;
     pucIP_Addr[3] = STATIC_IP_OCT4;
-    
+
     // Default Gateway/Router IP
     // 192.168.1.1
     pucIP_DefaultGWAddr[0] = STATIC_IP_OCT1;
     pucIP_DefaultGWAddr[1] = STATIC_IP_OCT2;
     pucIP_DefaultGWAddr[2] = STATIC_IP_OCT3;
     pucIP_DefaultGWAddr[3] = 1;
-    
+
     // We assume the router is also a DNS server
     pucDNS[0] = STATIC_IP_OCT1;
     pucDNS[1] = STATIC_IP_OCT2;
@@ -364,15 +364,15 @@ initDriver(void)
                 (unsigned long *)pucIP_DefaultGWAddr, (unsigned long *)pucDNS);    
     //
     // reset the CC3000 to apply Static Setting
-    // 
+    //
     wlan_stop();
     __delay_cycles(6000000);
     wlan_start(0);
-    
-#else 
+
+#else
 #error No IP Configuration Method Selected. One must be configured.
-#endif    
-    
+#endif
+
     //
     // Mask out all non-required events from CC3000
     //
@@ -640,7 +640,7 @@ tNetappIpconfigRetArgs * getCC3000Info()
 //*****************************************************************************
 //
 //!  \brief  Checks whether First Time Config information is set in the CC3000
-//!  
+//!
 //!  \param  None
 //!
 //!  \return none
@@ -648,7 +648,7 @@ tNetappIpconfigRetArgs * getCC3000Info()
 //!           run with this same board. If not, it may incorrectly assume that
 //!           the CC3000 was previously configured for FTC since it stores the
 //!           flag in the FRAM.
-//!  
+//!
 //
 //*****************************************************************************
 //char isFTCSet()
@@ -665,9 +665,9 @@ tNetappIpconfigRetArgs * getCC3000Info()
 
 //*****************************************************************************
 //
-//!  \brief  Sets the flag indicating First Time Config information is set in the 
+//!  \brief  Sets the flag indicating First Time Config information is set in the
 //!          CC3000
-//!  
+//!
 //!  \param  None
 //!
 //!  \return none
@@ -675,7 +675,7 @@ tNetappIpconfigRetArgs * getCC3000Info()
 //!           run with this same board. If not, it may incorrectly assume that
 //!           the CC3000 was previously configured for FTC since it stores the
 //!           flag in the FRAM.
-//!  
+//!
 //
 //*****************************************************************************
 //void  setFTCFlag()

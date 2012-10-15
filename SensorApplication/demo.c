@@ -48,6 +48,7 @@
 #include "version.h"
 #include "spi.h"
 #include "carsons_file.h"
+#include "server_setup.h"
 
 void main(void)
 {
@@ -56,6 +57,7 @@ void main(void)
     initDriver();							// Initialize Board and CC3000
     unsolicicted_events_timer_init();		// Initialize CC3000 Unsolicited Events Timer
     __enable_interrupt();					// Enable interrupts for UART
+//    clear_buffers();
 
     DefaultWifiConnection();				// Do a default connection
 
@@ -64,7 +66,7 @@ void main(void)
 
         hci_unsolicited_event_handler();	// Handle any un-solicited event if required - the function shall be triggered few times in a second
         unsolicicted_events_timer_init();
-        
+
         if(currentCC3000State() & CC3000_IP_ALLOC)
         {
             turnLedOn(CC3000_IP_ALLOC_IND);
