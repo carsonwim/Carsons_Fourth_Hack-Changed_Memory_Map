@@ -6,13 +6,13 @@ enum channel
 	channel1		= 0x3031,
 	channel2		= 0x3032,
 	channel3		= 0x3033,
-	channel4		= 0x0008,
-	channel5		= 0x0010,
-	channel6		= 0x0020,
-	channel7		= 0x0040,
-	channel8		= 0x0080,
-	channel9		= 0x0100,
-	channel123		= 0x0007,
+	channel4		= 0x3034,
+	channel5		= 0x3035,
+	channel6		= 0x3036,
+	channel7		= 0x3037,
+	channel8		= 0x3038,
+	channel9		= 0x3039,
+	channel123		= 0x303A
 };
 
 void clear_buffers(void);

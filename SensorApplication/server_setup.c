@@ -38,6 +38,7 @@ void refresh_ADC(void){
 	//Start with ADC:
 	//Stop ADC: Turn off, and stop conversion.
 	ADC10CTL0 &= ~(ADC10ON + ADC10ENC + ADC10SC);
+	__delay_cycles(1000);
 	//TURN off the interrupt.
     ADC10IE &= ~ADC10OVIE;
 
