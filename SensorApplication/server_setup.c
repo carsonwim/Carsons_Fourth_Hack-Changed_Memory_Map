@@ -1,4 +1,36 @@
-
+/*****************************************************************************
+*
+*  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions
+*  are met:
+*
+*    Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+*    Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the
+*    distribution.
+*
+*    Neither the name of Texas Instruments Incorporated nor the names of
+*    its contributors may be used to endorse or promote products derived
+*    from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*SOCKOPT_RECV_TIMEOUT
+*****************************************************************************/
 #include "cc3000.h"
 #include "msp430fr5739.h"
 #include "wlan.h"
@@ -9,12 +41,10 @@
 #include "board.h"
 #include "common.h"
 #include "string.h"
-#include "demo_config.h"
-#include "sensors.h"
+#include "device_config.h"
 #include "board.h"
 #include "strlib.h"
 #include "server.h"
-#include "carsons_file.h"
 #include "server_setup.h"
 
 
@@ -72,8 +102,6 @@ void refresh_ADC(void){
 
 }
 
-
-
 //******************************************************************************
 //This function refreshes the DMA registers and pins. It can be used before the
 // ADC is setup. All that is left after this is to turn on the ADC, start and enable,
@@ -89,8 +117,6 @@ void refresh_DMA(void){
 	DMA1CTL &= ~(DMAIE + DMAEN);
 	rep_buffer0_ptr 		= (unsigned char *)BUFFER0_STR_ADD;
 	rep_buffer1_ptr 		= (unsigned char *)BUFFER1_STR_ADD;
-
-
 
 	clear_buffers();
 
@@ -133,9 +159,17 @@ void clear_buffers(void){
 
 	}
 
-//	buffer_wiper_ptr = NULL;
 }
-
+//******************************************************************************
+//This function is quite important. It is responsible for configuring
+//which adc channel is sampled. This is called whenever the configeration of the
+//device is changed.
+//
+//Before it is called the "Referesh ADC" function should be called.
+//
+//The input variable is a pointer to the values recieved by the incomming
+//configeration message recieved from the iPad
+//******************************************************************************
 void configure_channel(unsigned long*ptr){
 
 	switch(*ptr)

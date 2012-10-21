@@ -1,23 +1,51 @@
-
+/*****************************************************************************
+*
+*  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions
+*  are met:
+*
+*    Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+*    Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the
+*    distribution.
+*
+*    Neither the name of Texas Instruments Incorporated nor the names of
+*    its contributors may be used to endorse or promote products derived
+*    from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*SOCKOPT_RECV_TIMEOUT
+*****************************************************************************/
 
 #include "cc3000.h"
 #include "msp430fr5739.h"
 #include "wlan.h" 
 #include "evnt_handler.h"    // callback function declaration
-//#include "nvmem.h"
 #include "socket.h"
 #include "common.h"
 #include "netapp.h"
 #include "board.h"
 #include "common.h"
 #include "string.h"
-#include "demo_config.h"
-//#include "uart.h"
-#include "sensors.h"
+#include "device_config.h"
 #include "board.h"
-//#include "terminal.h"
 #include "spi.h"
-#include "carsons_file.h"
+
 
 long ulSocket;
 
@@ -30,66 +58,10 @@ unsigned char pucSubnetMask[4];
 unsigned char pucDNS[4];
 
 sockaddr tSocketAddr;
-
-//unsigned char prefixChangeFlag = 0;
-//unsigned char prefixFromUser[3] = {0};
-//char * ftcPrefixptr;
-
 tNetappIpconfigRetArgs ipinfo;
 
 char debugi = 0;
-// First Time Config Prefix - Texas Instruments
-// NOTE: the actual value of the prefix may change
-// if the Prefix Change process is performed
-//const char aucCC3000_prefix[3] = {'T', 'T', 'T'};
-
-//#define FRAM_FTC_INFO_ADDRESS       0x1800
-
-//unsigned char *FRAM_FIRST_TIME_CONFIG_WRITTEN_ptr = (unsigned char *)FRAM_FTC_INFO_ADDRESS;
-
-
 char cc3000state = CC3000_UNINIT;
-
-
-
-//*****************************************************************************
-//
-//! ConnectUsingSSID
-//!
-//! \param  ssidName is a string of the AP's SSID
-//!
-//! \return none
-//!
-//! \brief  Connect to an Access Point using the specified SSID
-//
-//*****************************************************************************
-//int ConnectUsingSSID(char * ssidName)
-//{
-////    terminalPrint("Attempting to connect using SSID: ");
-////    terminalPrint((char*)ssidName);
-////    terminalPrint("\r\n");
-//
-//    unsetCC3000MachineState(CC3000_ASSOC);
-//
-//    // Disable Profiles and Fast Connect
-//    wlan_ioctl_set_connection_policy(0, 0, 0);
-//
-//    wlan_disconnect();
-//
-//    __delay_cycles(10000);
-//
-//    // This triggers the CC3000 to connect to specific AP with certain parameters
-//    //sends a request to connect (does not necessarily connect - callback checks that for me)
-//#ifndef CC3000_TINY_DRIVER
-//    wlan_connect(DEFAULT_AP_SECURITY, ssidName, strlen(ssidName), NULL, DFAULT_AP_SECURITY_KEY, strlen(DFAULT_AP_SECURITY_KEY));
-//#else
-//    wlan_connect(ssidName, strlen(ssidName));
-//#endif
-//    // We don't wait for connection. This is handled somewhere else (in the main
-//    // loop for example).
-//
-//    return 0;
-//}
 
 //*****************************************************************************
 // Crasons First FUnction
@@ -114,52 +86,6 @@ int DefaultWifiConnection(void)
 }
 
 
-//*****************************************************************************
-//
-//! SetupIPAddress
-//!
-//! \param  buffer
-//!
-//! \return none
-//!
-//! \brief  Configure's the CC3000's IP Address
-//
-//*****************************************************************************
-//void SetupIPAddress (unsigned char ub, unsigned char mub, unsigned char mlb,unsigned char lb)
-//{
-//    //
-//    // Subnet mask is assumed to be 255.255.255.0
-//    //
-//    pucSubnetMask[0] = 0xFF;
-//    pucSubnetMask[1] = 0xFF;
-//    pucSubnetMask[2] = 0xFF;
-//    pucSubnetMask[3] = 0x0;
-//
-//    // CC3000's IP
-//    pucIP_Addr[0] = ub;
-//    pucIP_Addr[1] = mub;
-//    pucIP_Addr[2] = mlb;
-//    pucIP_Addr[3] = lb;
-//
-//    // Default Gateway/Router IP
-//    // 192.168.1.1
-//    pucIP_DefaultGWAddr[0] = 192;
-//    pucIP_DefaultGWAddr[1] = 168;
-//    pucIP_DefaultGWAddr[2] = 10;
-//    pucIP_DefaultGWAddr[3] = 1;
-//
-//    //
-//    // Currently no implementation of DHCP in hte demo
-//    //
-//    pucDNS[0] = 0;
-//    pucDNS[1] = 0;
-//    pucDNS[2] = 0;
-//    pucDNS[3] = 0;
-//
-//    netapp_dhcp((unsigned long *)pucIP_Addr, (unsigned long *)pucSubnetMask, (unsigned long *)pucIP_DefaultGWAddr, (unsigned long *)pucDNS);
-//}
-//
-//
 //*****************************************************************************
 //
 //! sendDriverPatch
@@ -291,91 +217,39 @@ initDriver(void)
     wlan_init( CC3000_UsynchCallback, sendWLFWPatch, sendDriverPatch, sendBootLoaderPatch, ReadWlanInterruptPin, WlanInterruptEnable, WlanInterruptDisable, WriteWlanPin);
     wlan_start(0);
 
-#if IP_ALLOC_METHOD == USE_DHCP
+	if (IP_ALLOC_METHOD == USE_STATIC_IP){// The DHCP setting shave been removed.
 
-    // DHCP is used by default
+		pucSubnetMask[0] = 0xFF;// Subnet mask is assumed to be 255.255.255.0
+		pucSubnetMask[1] = 0xFF;
+		pucSubnetMask[2] = 0xFF;
+		pucSubnetMask[3] = 0x0;
 
-    // Subnet mask is assumed to be 255.255.255.0
 
-    pucSubnetMask[0] = 0;
-    pucSubnetMask[1] = 0;
-    pucSubnetMask[2] = 0;
-    pucSubnetMask[3] = 0;
+		pucIP_Addr[0] = STATIC_IP_OCT1;    // CC3000's IP
+		pucIP_Addr[1] = STATIC_IP_OCT2;
+		pucIP_Addr[2] = STATIC_IP_OCT3;
+		pucIP_Addr[3] = STATIC_IP_OCT4;
 
-    // CC3000's IP
-    pucIP_Addr[0] = 0;
-    pucIP_Addr[1] = 0;
-    pucIP_Addr[2] = 0;
-    pucIP_Addr[3] = 0;
+		pucIP_DefaultGWAddr[0] = STATIC_IP_OCT1;// Default Gateway/Router IP
+		pucIP_DefaultGWAddr[1] = STATIC_IP_OCT2;
+		pucIP_DefaultGWAddr[2] = STATIC_IP_OCT3;
+		pucIP_DefaultGWAddr[3] = 1;
 
-    // Default Gateway/Router IP
-    // 192.168.1.1
-    pucIP_DefaultGWAddr[0] = 0;
-    pucIP_DefaultGWAddr[1] = 0;
-    pucIP_DefaultGWAddr[2] = 0;
-    pucIP_DefaultGWAddr[3] = 0;
+		pucDNS[0] = STATIC_IP_OCT1;// We assume the router is also a DNS server
+		pucDNS[1] = STATIC_IP_OCT2;
+		pucDNS[2] = STATIC_IP_OCT3;
+		pucDNS[3] = 1;
 
-    // We assume the router is also a DNS server
-    pucDNS[0] = 0;
-    pucDNS[1] = 0;
-    pucDNS[2] = 0;
-    pucDNS[3] = 0;
+		netapp_dhcp((unsigned long *)pucIP_Addr, (unsigned long *)pucSubnetMask,
+					(unsigned long *)pucIP_DefaultGWAddr, (unsigned long *)pucDNS);
 
-    // Force DHCP
-    netapp_dhcp((unsigned long *)pucIP_Addr, (unsigned long *)pucSubnetMask,
-                (unsigned long *)pucIP_DefaultGWAddr, (unsigned long *)pucDNS);
-
-    //
-    // reset the CC3000
-    //
-    wlan_stop();
-    __delay_cycles(6000000);
-    wlan_start(0);
-
-#elif IP_ALLOC_METHOD == USE_STATIC_IP
-
-    // Subnet mask is assumed to be 255.255.255.0
-
-    pucSubnetMask[0] = 0xFF;
-    pucSubnetMask[1] = 0xFF;
-    pucSubnetMask[2] = 0xFF;
-    pucSubnetMask[3] = 0x0;
-
-    // CC3000's IP
-    pucIP_Addr[0] = STATIC_IP_OCT1;
-    pucIP_Addr[1] = STATIC_IP_OCT2;
-    pucIP_Addr[2] = STATIC_IP_OCT3;
-    pucIP_Addr[3] = STATIC_IP_OCT4;
-
-    // Default Gateway/Router IP
-    // 192.168.1.1
-    pucIP_DefaultGWAddr[0] = STATIC_IP_OCT1;
-    pucIP_DefaultGWAddr[1] = STATIC_IP_OCT2;
-    pucIP_DefaultGWAddr[2] = STATIC_IP_OCT3;
-    pucIP_DefaultGWAddr[3] = 1;
-
-    // We assume the router is also a DNS server
-    pucDNS[0] = STATIC_IP_OCT1;
-    pucDNS[1] = STATIC_IP_OCT2;
-    pucDNS[2] = STATIC_IP_OCT3;
-    pucDNS[3] = 1;
+		// reset the CC3000 to apply Static Setting
+		wlan_stop();
+		__delay_cycles(6000000);
+		wlan_start(0);
+	}
     
-    netapp_dhcp((unsigned long *)pucIP_Addr, (unsigned long *)pucSubnetMask, 
-                (unsigned long *)pucIP_DefaultGWAddr, (unsigned long *)pucDNS);    
-    //
-    // reset the CC3000 to apply Static Setting
-    //
-    wlan_stop();
-    __delay_cycles(6000000);
-    wlan_start(0);
-
-#else
-#error No IP Configuration Method Selected. One must be configured.
-#endif
-
-    //
     // Mask out all non-required events from CC3000
-    //
     wlan_set_event_mask(HCI_EVNT_WLAN_KEEPALIVE|HCI_EVNT_WLAN_ASYNC_PING_REPORT);
     
     unsolicicted_events_timer_init();
@@ -385,143 +259,6 @@ initDriver(void)
     
     return(0);
 }
-
-
-
-//*****************************************************************************
-//
-//! StartFirstTimeConfig
-//!
-//!  \param  None
-//!
-//!  \return none
-//!
-//!  \brief  The function triggers a smart configuration process on CC3000.
-//!			it exists upon completion of the process
-//
-//*****************************************************************************
-//
-//void StartFirstTimeConfig(void)
-//{
-//    ulSmartConfigFinished = 0;
-//    unsetCC3000MachineState(CC3000_ASSOC);
-//
-//    //
-//    // Trigger the First Time Config process
-//    //
-//    turnLedOn(CC3000_FTC_IND);
-//
-//    //
-//    // Reset all the previous configuration
-//    //
-//    wlan_ioctl_set_connection_policy(0,0,0);
-//
-//    wlan_ioctl_del_profile(0);
-//    wlan_ioctl_del_profile(1);
-//    wlan_ioctl_del_profile(2);
-//
-//    __delay_cycles(5000);
-//
-////    terminalPrint("Starting First Time Config\r\n");
-//
-//    wlan_first_time_config_set_prefix((char *)aucCC3000_prefix);
-//
-//    //
-//    // Start the First Time Config process
-//    //
-//    wlan_first_time_config_start();
-//
-//    //
-//    // Wait for First Time config to finish
-//    //
-//    while (ulSmartConfigFinished == 0)
-//    {
-//        __delay_cycles(6000000);
-//
-//        turnLedOff(CC3000_FTC_IND);
-//
-//        __delay_cycles(6000000);
-//
-//      	turnLedOn(CC3000_FTC_IND);
-//
-//        hci_unsolicited_event_handler();
-//    }
-//
-//    turnLedOn(CC3000_FTC_IND);
-//
-//    // Set flag in FRAM to indicate Smart Config finished successfully
-//    *FRAM_FIRST_TIME_CONFIG_WRITTEN_ptr = FIRST_TIME_CONFIG_SET;
-//
-//    //
-//    // Configure to connect automatically to the AP retrieved in the
-//    // simple config process
-//    //
-//    wlan_ioctl_set_connection_policy(0, 0, 1);
-//
-//    //
-//    // reset the CC3000
-//    //
-//    wlan_stop();
-//
-//    __delay_cycles(600000);
-//
-//    wlan_start(0);
-//
-//    //
-//    // Mask out all non-required events
-//    //
-//    wlan_set_event_mask(HCI_EVNT_WLAN_KEEPALIVE|HCI_EVNT_WLAN_ASYNC_PING_REPORT);
-//
-//    while (!(currentCC3000State() & CC3000_ASSOC))
-//    {
-//        __delay_cycles(10000);
-//
-//        hci_unsolicited_event_handler();
-//    }
-//
-////    terminalPrint("First Time Config Complete\r\n");
-//}
-
-
-//*****************************************************************************
-//
-//! Disconnect All
-//!
-//!  \param  None
-//!
-//!  \return none
-//!
-//!  \brief  Gracefully disconnects us completely
-//
-//*****************************************************************************
-//void disconnectAll()
-//{
-//
-//}
-
-//*****************************************************************************
-//
-//!  \brief  Return the highest state which we're in
-//!
-//!  \param  None
-//!
-//!  \return none
-//!
-//
-//*****************************************************************************
-//char highestCC3000State()
-//{
-//    // We start at the highest state and go down, checking if the state
-//    // is set.
-//    char mask = 0x80;
-//    while(!(cc3000state & mask))
-//    {
-//        mask = mask >> 1;
-//    }
-//
-//    return mask;
-//}
-
 //*****************************************************************************
 //
 //!  \brief  Return the current state bits
@@ -637,48 +374,3 @@ tNetappIpconfigRetArgs * getCC3000Info()
     return &ipinfo;
 }
 #endif
-//*****************************************************************************
-//
-//!  \brief  Checks whether First Time Config information is set in the CC3000
-//!
-//!  \param  None
-//!
-//!  \return none
-//!  \warning This function assumes that the CC3000 module was previously
-//!           run with this same board. If not, it may incorrectly assume that
-//!           the CC3000 was previously configured for FTC since it stores the
-//!           flag in the FRAM.
-//!
-//
-//*****************************************************************************
-//char isFTCSet()
-//{
-//    if(*FRAM_FIRST_TIME_CONFIG_WRITTEN_ptr == FIRST_TIME_CONFIG_SET)
-//    {
-//        return 1;
-//    }
-//    else
-//    {
-//        return 0;
-//    }
-//}
-
-//*****************************************************************************
-//
-//!  \brief  Sets the flag indicating First Time Config information is set in the
-//!          CC3000
-//!
-//!  \param  None
-//!
-//!  \return none
-//!  \warning This function assumes that the CC3000 module was previously
-//!           run with this same board. If not, it may incorrectly assume that
-//!           the CC3000 was previously configured for FTC since it stores the
-//!           flag in the FRAM.
-//!
-//
-//*****************************************************************************
-//void  setFTCFlag()
-//{
-//    *FRAM_FIRST_TIME_CONFIG_WRITTEN_ptr = FIRST_TIME_CONFIG_SET;
-//}

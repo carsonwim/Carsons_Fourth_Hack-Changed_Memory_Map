@@ -1,65 +1,48 @@
-
+/*****************************************************************************
+*
+*  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions
+*  are met:
+*
+*    Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+*    Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the
+*    distribution.
+*
+*    Neither the name of Texas Instruments Incorporated nor the names of
+*    its contributors may be used to endorse or promote products derived
+*    from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*SOCKOPT_RECV_TIMEOUT
+*****************************************************************************/
 
 #include <msp430.h>
 #include "wlan.h" 
 #include "evnt_handler.h"    // callback function declaration
-//#include "nvmem.h"S
 #include "socket.h"
-
 #include "netapp.h"
 #include "board.h"
-#include "carsons_file.h"
 
-
-//#define FRAM_FORCED_RES_ADDRESS       0x1840
-//
-//
-//unsigned char * msp430_forced_restart_ptr = (unsigned char *)FRAM_FORCED_RES_ADDRESS;
-//extern unsigned char * ptrFtcAtStartup;
-//*****************************************************************************
-//
-//! pio_init
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//! \brief  Initialize the board's I/O
-//
-//*****************************************************************************    
-//hello
 void pio_init()
 {
 
 	 initClk(); // Init the device with 24MHz DCOCLCK.
-    // Enable switches
-    // P4.0 and P4.1 are configured as switches
-    // Port 4 has only two pins    
-//    P4OUT |= BIT0;                      // Configure pullup resistor
-//    P4DIR &= ~(BIT0);                  // Direction = input
-//    P4REN |= BIT0;                     // Enable pullup resistor
-//    P4IES |= (BIT0);                   // P4.0 Hi/Lo edge interrupt
-//    P4IFG = 0;                         // P4 IFG cleared
-//    P4IE = BIT0;                       // P4.0 interrupt enabled
-    
-    // Enable First Time Config Prefix changing jumper
-    // To detect if pulled high by VCC
-    
-    // P3.3 is our High signal
-//    P3DIR |= BIT3;
-//    P3OUT |= BIT3;
-//
-    // P3.2 Configure pulled low and will detect a hi/low transition
-    
-//    P3DIR &= ~(BIT2);             // P3.2 As Input
-//    P3OUT &= ~(BIT2);             // P3.2 With Pulldown
-//    P3REN |= BIT2;                // P3.2 Enable Pulldown
-//    P3IES &= ~(BIT2);             // P3.2 Lo/Hi edge interrupt
-//    P3IFG &= ~(BIT2);             // P3.2 IFG cleared
-//    P3IE |= BIT2;                 // P3.2 interrupt enabled
-    
-
-    
     // P4.1 - WLAN enable full DS
  	WLAN_EN_PORT_OUT &= ~WLAN_EN_PIN;
 	WLAN_EN_PORT_DIR |= WLAN_EN_PIN;
@@ -81,8 +64,6 @@ void pio_init()
     __delay_cycles(1200000);
 
     initLEDs();
-    
-
 }
 //*****************************************************************************
 //
@@ -243,40 +224,6 @@ void initClk(void)
 
 }
 
-////*****************************************************************************
-////
-////! \brief  Starts timer that handles switch debouncing
-////!
-////! \param  none
-////!
-////! \return none
-////!
-////
-////*****************************************************************************
-//void StartDebounceTimer()
-//{
-//    // default delay = 0
-//    // Debounce time = 1500* 1/8000 = ~200ms
-//    TB0CCTL0 = CCIE;                          // TACCR0 interrupt enabled
-//    TB0CCR0 = 3000;
-//    TB0CTL = TBSSEL_1 + MC_1;                 // SMCLK, continuous mode
-//}
-
-////*****************************************************************************
-////
-////! \brief  Stops timer that handles switch debouncing
-////!
-////! \param  none
-////!
-////! \return none
-////!
-////
-////*****************************************************************************
-//void StopDebounceTimer()
-//{
-//    TB0CCTL0 &= ~CCIE;                          // TACCR0 interrupt enabled
-//}
-
 //*****************************************************************************
 //
 //! Initialize LEDs
@@ -424,117 +371,6 @@ void toggleLed(char ledNum)
     }
 }
 
-////*****************************************************************************
-////
-////! \brief  check if FTC flag was set
-////!
-////! \param  none
-////!
-////! \return indication if flag is set
-////!
-////
-////*****************************************************************************
-//long IsFTCflagSet()
-//{
-//
-//  return (P4OUT&BIT0) ;                                //  check if FTC flag is configure
-//
-//}
-
-////*****************************************************************************
-////
-////! \brief  set FTC flag when S2 was pressed
-////!
-////! \param  none
-////!
-////! \return none
-////!
-////
-////*****************************************************************************
-//void SetFTCflag()
-//{
-////   *ptrFtcAtStartup = FIRST_TIME_CONFIG_SET;                              //  set FTC flag
-//}
-
-////*****************************************************************************
-////
-////! \brief  clear FTC flag when S2 was pressed
-////!
-////! \param  none
-////!
-////! \return none
-////!
-////
-////*****************************************************************************
-//void ClearFTCflag()
-//{
-//  *ptrFtcAtStartup = 0xFF;                             //  clear FTC flag
-//}
-
-  
-////*****************************************************************************
-////
-////! \brief  Dissable S2 switch interrupt
-////!
-////! \param  none
-////!
-////! \return none
-////!
-////
-////*****************************************************************************
-//void DissableSwitch()
-//{
-//            // disable switch interrupt
-//
-//
-//            P4IFG &= ~BIT0;                // Clear P4.0 IFG
-//            P4IE &= ~(BIT0);               // P4.0 interrupt disabled
-//            P4IFG &= ~BIT0;                // Clear P4.0 IFG
-//
-//
-//                P4IFG = 0;
-//}
-
-////*****************************************************************************
-////
-////! \brief  Restore S2 switch interrupt
-////!
-////! \param  none
-////!
-////! \return none
-////!
-////
-////*****************************************************************************
-//void RestoreSwitch()
-//{
-//
-//
-//    // Restore Switch Interrupt
-//    P4IFG &= ~BIT0;                 // Clear P4.0 IFG
-//    P4IE |= BIT0;                   // P4.0 interrupt enabled
-//    P4IFG &= ~BIT0;                 // Clear P4.0 IFG
-//
-//}
-
-// //*****************************************************************************
-////
-////! \brief  Indication if the switch is still pressed
-////!
-////! \param  none
-////!
-////! \return none
-////!
-////
-////*****************************************************************************
-//long switchIsPressed()
-//{
-//
-//if(!(P1IN & BIT3))
-//  return 1;
-//
-//return 0;
-//
-//}
 
 //*****************************************************************************
 //

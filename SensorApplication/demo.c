@@ -32,7 +32,6 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *SOCKOPT_RECV_TIMEOUT
 *****************************************************************************/
-
 #include <msp430.h>
 #include "wlan.h" 
 #include "evnt_handler.h"
@@ -40,14 +39,11 @@
 #include "common.h"
 #include "netapp.h"
 #include "cc3000.h"
-#include "sensors.h"
 #include "board.h"
 #include "string.h"
-#include "demo_config.h"
+#include "device_config.h"
 #include "server.h"
-#include "version.h"
 #include "spi.h"
-#include "carsons_file.h"
 #include "server_setup.h"
 
 void main(void)
@@ -57,8 +53,6 @@ void main(void)
     initDriver();							// Initialize Board and CC3000
     unsolicicted_events_timer_init();		// Initialize CC3000 Unsolicited Events Timer
     __enable_interrupt();					// Enable interrupts for UART
-//    clear_buffers();
-
     DefaultWifiConnection();				// Do a default connection
 
     while (1)

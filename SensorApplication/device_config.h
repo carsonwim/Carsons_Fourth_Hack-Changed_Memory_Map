@@ -31,26 +31,46 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *SOCKOPT_RECV_TIMEOUT
 *****************************************************************************/
-#ifndef SERVER_SETUP
-#define SERVER_SETUP
+#ifndef DEMO_CONFIG_H
+#define DEMO_CONFIG_H
 
-enum channel
-{
-	channel1		= 0x3031,
-	channel2		= 0x3032,
-	channel3		= 0x3033,
-	channel4		= 0x3034,
-	channel5		= 0x3035,
-	channel6		= 0x3036,
-	channel7		= 0x3037,
-	channel8		= 0x3038,
-	channel9		= 0x3039,
-	channel123		= 0x303A
-};
+#include "common.h"
 
-void clear_buffers(void);
-void refresh_ADC(void);
-void refresh_DMA(void);
-void configure_channel(unsigned long*ptr);
+//************************************************************
+// Modify the following settings as necessary to run the Device
+//
+//This is how the device is configured. It shows all the relevant
+//settings that may need consideration.
+//************************************************************
+
+#define IP_ALLOC_METHOD USE_STATIC_IP						//Or define IP_ALLOC_METHOD = USE_DHCP.
+
+
+// Default SSID Settings
+#define DEFAULT_OUT_OF_BOX_SSID       		"FramRouter"	// Name of the Wifi SSid
+#define DEFAULT_AP_SECURITY          		3				// 3 for WPA2
+#define DFAULT_AP_SECURITY_KEY             	"aaaaaaaa"		// Password For Router
+
+#if IP_ALLOC_METHOD == USE_STATIC_IP						// Specify the Static IP
+#define STATIC_IP_OCT1 192
+#define STATIC_IP_OCT2 168
+#define STATIC_IP_OCT3 1
+#define STATIC_IP_OCT4 235
+#endif
+
+#define SERVER_PORT 1204									// Incoming Port. This is a standard!!!!
+
+#define BUFFER0_STR_ADD 0xF382;				//Allocated in the linker command file.
+#define BUFFER1_STR_ADD 0xF982;				//Allocated in the linker command file.
+
+#define AMMOUNT_OF_SAMPLES_IN_PACKET  1455	//Should be put in a config header for the device.
+#define AMMOUNT_PACKETS_TO_BE_SENT 1500		//Should be put in a config header for the device.
+
+//ADC
+#define ADC_CLOCK_CYCLES ADC10SHT_5
+#define ADC_CLOCK_SOURCE ADC10SSEL_0  // Auxillary Clock
+#define ADC_CLOCK_DIVIDE ADC10DIV_0
+#define ADC_REFERENCE_VOLTAGE ADC10SREF_0
 
 #endif
+

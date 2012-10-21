@@ -1,3 +1,36 @@
+/*****************************************************************************
+*
+*  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions
+*  are met:
+*
+*    Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+*    Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the
+*    distribution.
+*
+*    Neither the name of Texas Instruments Incorporated nor the names of
+*    its contributors may be used to endorse or promote products derived
+*    from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*SOCKOPT_RECV_TIMEOUT
+*****************************************************************************/
 #ifndef CC3000_H
 #define CC3000_H
 
@@ -21,15 +54,10 @@ enum cc3000StateEnum
     CC3000_CLIENT_CONNECTED = 0x20  // CC3000 Client Connected to Server
 };
 
-
-
-//int ConnectUsingSSID(char * ssidName);
 int DefaultWifiConnection(void);
-//void SetupIPAddress (unsigned char ub, unsigned char mub, unsigned char mlb,unsigned char lb);
 void setupLocalSocket(void);
 void ConnectToServer(void);
 void ConnectToServer(void);
-
 
 char *sendDriverPatch(unsigned long *Length);
 char *sendBootLoaderPatch(unsigned long *Length);
@@ -38,20 +66,13 @@ char *sendWLFWPatch(unsigned long *Length);
 void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length);
 
 int initDriver(void);
-//void StartFirstTimeConfig(void);
 void closeLocalSocket(void);
-//void disconnectAll();
-
-//char isFTCSet();
-//void setFTCFlag();
-
 
 // Machine State
 char currentCC3000State();
 void setCC3000MachineState(char stat);
 void unsetCC3000MachineState(char stat);
 void resetCC3000StateMachine();
-//char highestCC3000State();
 
 tNetappIpconfigRetArgs * getCC3000Info();
 #endif

@@ -1,3 +1,36 @@
+/*****************************************************************************
+*
+*  Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions
+*  are met:
+*
+*    Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+*    Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the
+*    distribution.
+*
+*    Neither the name of Texas Instruments Incorporated nor the names of
+*    its contributors may be used to endorse or promote products derived
+*    from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*SOCKOPT_RECV_TIMEOUT
+*****************************************************************************/
 #include "cc3000.h"
 #include "msp430fr5739.h"
 #include "wlan.h" 
@@ -8,12 +41,10 @@
 #include "board.h"
 #include "common.h"
 #include "string.h"
-#include "demo_config.h"
-#include "sensors.h"
+#include "device_config.h"
 #include "board.h"
 #include "strlib.h"
 #include "server.h"
-#include "carsons_file.h"
 #include "server_setup.h"
 
 
@@ -71,8 +102,6 @@ char serverErrorCode = 0;
 //*****************************************************************************************************************************
 void waitForConnection(void)
 {
-
-//	setup_parrelel_sampling();
 	setup_data_packet_header();
 
 	//RESET ADC and DMA:
@@ -109,7 +138,6 @@ void waitForConnection(void)
 			}
             else if(clientDescriptor == SOCKET_INACTIVE_ERR)
             {
-//                terminalPrint("Socket Server Timeout. Restarting Server\r\n");
 				clientDescriptor = -1;
                 // Reinitialize the server
                 shutdownServer();
@@ -129,7 +157,7 @@ void waitForConnection(void)
 //to be taken.
 // Packet Structure: <Command 1 Byte><Size of data 2 bytes><Missed Data 2 bytes><Data 2 bytes>
 //*****************************************************************************
-char incomingPacketManager(void){
+void incomingPacketManager(void){
 
 	char requestBuffer[SERVER_RECV_BUF_SIZE] = {NULL};
 	bytesRecvd = recv(clientDescriptor, requestBuffer, sizeof(requestBuffer), 0);
@@ -171,9 +199,8 @@ char incomingPacketManager(void){
 
 	case Start:
 		if(deviceconfigured == FALSE){
-			configure_channel(&config_data);
-			deviceconfigured = TRUE; //This is where I would configure the device to operate differently.
-			// Consider setting up the ADC here, and creating a function that does this.
+			configure_channel(&config_data);//This is where I configure the device to operate differently.
+			deviceconfigured = TRUE;
 		}
 
 		if(DMA_STATE == HALTED){							//VIMP: The stop state must stop the DMA
@@ -191,10 +218,9 @@ char incomingPacketManager(void){
 
 		for(i=0; i<ammount_packets_to_be_sent; i++){
 
-			while(DMA0_State != DONE && DMA1_State != DONE);
-																	//			if(DMA0_State == DONE || DMA1_State == DONE){	// VIMP: This may be a redundant check.
-				// One of them will be done, because the buffers are waiting to be sent.
-				//Safer to keep this here.
+			while(DMA0_State != DONE && DMA1_State != DONE); //Waits while buffers are populated
+
+			//This checks which buffer is full, and toggles the operation.
 			if(sendingBuffer_ptr == buffer0_ptr){		//Buffer0 is fill or done
 				DMA0_State = NOT_DONE;					// Reset for next usage
 				DMA1CTL += DMAEN;						// Start or enable DMA1 buffer filling process
@@ -224,18 +250,19 @@ char incomingPacketManager(void){
 				}
 			}
 			if (clientDescriptor == -1){break;}
-																				//			}
+
 		}
 		break;
+
 	case Stop:
-		//RESET ADC and DMA:
+		//RESET ADC:
 		refresh_ADC();
 		ADC_STATE = HALTED;
-		//RESET DMA STATE.
+		//RESET DMA.
 		refresh_DMA();
 		DMA_STATE = HALTED;
 
-
+		// The confirmation packet being sent back contains no relevant information.
 		generalConfirmationPacket[1] = 0;					//First Byte of Data Size
 		generalConfirmationPacket[2] = 2;					//Second Byte of Data Size
 		generalConfirmationPacket[3] = 0;					//First Byte of Data lost
@@ -251,24 +278,19 @@ char incomingPacketManager(void){
 		if (bytesSent != sizeof(generalConfirmationPacket)){check_socket_connection();}
 
 		break;
-	case Continue:
-		break;
 	default:
 		break;
 
 	}
 
-
-	return requestBuffer[0];
-
 }
+
 void do_nothing(void){}
 
 
 //****************************************************************************************************************************************
-// This does the basic configeration of the Packet Headers.
+// This does the basic configuration of the Packet Headers.
 //****************************************************************************************************************************************
-
 void setup_data_packet_header (void){
 
 	buffer0_ptr 		= (unsigned char *)BUFFER0_STR_ADD;
@@ -429,73 +451,11 @@ void serverError(char err)
      }
 }
 
-
-			////****************************************************************************************************************************************
-			//// This sets up the ports for use.  Must still start the ADC  and DMA's. Remember to turn these off when you are done! DMA is not enabled.
-			////****************************************************************************************************************************************
-			//void setup_parrelel_sampling (void){
-			////****************************************************************************************************************************************
-			//	//Setup the Accelerometer:
-			////    P3OUT &= ~(BIT0 + BIT3); 													// P3.0,P3.1 and P3.2 are accelerometer inputs
-			////    P3DIR &= ~(BIT0 + BIT3);
-			////    P3REN |= BIT0 + BIT3;
-			////
-			////    ACC_PORT_SEL0 		|= ACC_X_PIN ;    								//Enable A/D channel inputs
-			////    ACC_PORT_SEL1 		|= ACC_X_PIN ;
-			////    ACC_PORT_DIR 		&= ~(ACC_X_PIN );
-			////    ACC_PWR_PORT_DIR 	|= ACC_PWR_PIN;   								//Enable ACC_POWER
-			////    ACC_PWR_PORT_OUT 	|= ACC_PWR_PIN;
-			//
-			//    P3OUT 	&= ~BIT3;
-			//	P3DIR 	&= ~BIT3;
-			//	P3REN 	|=  BIT3;
-			//    P3SEL0 	|=  BIT3;
-			//    P3SEL1	|=  BIT3;
-			//
-			//
-			//
-			//    __delay_cycles(200000); 											// Allow the accelerometer to settle before sampling any data
-			////****************************************************************************************************************************************
-			//    //Config the ADC
-			//    ADC10CTL0 = ADC10SHT_0 + ADC10MSC + ADC10ON;               			//32 Clock Cycles in sample, Continous Saample, Adc On
-			//    ADC10CTL1 = ADC10SHP + ADC10CONSEQ_2 + ADC10SSEL_0 + ADC10DIV_0;  	//Repeat Single Channel, Sm Clock, Divide clock by 1
-			//    ADC10CTL2 &= ~ADC10RES;												//8 bit resolution
-			////    ADC10MCTL0 = ADC10INCH_12 + ADC10SREF_1;  							// Vref+, Channel A12
-			//    ADC10MCTL0 = ADC10INCH_13 + ADC10SREF_0;  							// Source Reference, Channel A15
-			//    //VIMP!!! I am going to turn on an interrupt for when a value is not collected!
-			//	ADC10IE |= ADC10OVIE;					// Turn ADC interrupt on. This will catch the missed samples.
-			//
-			//
-			////****************************************************************************************************************************************
-			//    // Configure internal reference
-			//	while(REFCTL0 & REFGENBUSY);              							// If ref generator busy, WAIT
-			//	REFCTL0 |= REFVSEL_3+REFON;               							// Select internal \ref = 2.5V
-			//	                                            						// Internal Reference ON
-			//	__delay_cycles(75);                       							// Delay (~75us) for Ref to settle
-			////****************************************************************************************************************************************
-			//	  // Configure DMA0
-			//	   DMACTL0 = DMA0TSEL__ADC10IFG + DMA1TSEL__ADC10IFG;            	// ADC10IFG trigger - Set for both DMA Channels
-			//	  __data16_write_addr((unsigned short) &DMA0SA,(unsigned long) &ADC10MEM0); 		// Source single address
-			//	  __data16_write_addr((unsigned short) &DMA0DA,(unsigned long) (buffer0_ptr + packet_header_size));	// Destination array address
-			//	  DMA0SZ = ammount_of_samples_in_packet;                            // Sets the ammount of transfers to be completed - Set above.
-			//	  DMA0CTL = DMADT_0 + DMADSTINCR_3 + DMAIE + DMALEVEL + DMASRCBYTE + DMADSTBYTE;
-			//	  // Single transfer process with DM0SZ itterations, inc dest, byte access in both registers,
-			//
-			////****************************************************************************************************************************************
-			//	  // Configure DMA1
-			//	  __data16_write_addr((unsigned short) &DMA1SA,(unsigned long) &ADC10MEM0);			// Source single address
-			//	  __data16_write_addr((unsigned short) &DMA1DA,(unsigned long) (buffer1_ptr + packet_header_size));	// Destination array address
-			//	  DMA1SZ = ammount_of_samples_in_packet;                            // Sets the ammount of transfers to be completed - Set above.
-			//	  DMA1CTL = DMADT_0 + DMADSTINCR_3 + DMAIE + DMALEVEL + DMASRCBYTE + DMADSTBYTE;
-			//	  // Single transfer process with DM1SZ itterations, inc dest, byte access in both registers,
-			//}
-
 //****************************************************************************************************************************************
 //DMA Interrupt Handler
 // This needs to deal with both the interrupts. When a DMA channel is done, it changes its state, and assigns itself as the next
 // buffer to be sent.
 //****************************************************************************************************************************************
-
 #pragma vector=DMA_VECTOR
 __interrupt void DMA0_ISR (void)
 {
